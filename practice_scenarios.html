@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Practice Scenarios | PHR 952 Biostatistics</title>
+<style>
+  :root{
+    --primary:#003366;--accent:#0072CE;--light:#E6F0FA;--success:#1B7F37;
+    --warn:#B8860B;--bg:#F5F8FB;--card:#FFFFFF;--text:#1B2733;
+    --muted:#5A6B7B;--border:#D6DEE6;
+  }
+  *{box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    margin:0;padding:0;background:var(--bg);color:var(--text);line-height:1.5;}
+  header{background:linear-gradient(135deg,var(--primary),var(--accent));color:white;padding:24px 32px;}
+  header h1{margin:0;font-size:1.6em}
+  header p{margin:6px 0 0;opacity:.9;font-size:.95em}
+  .container{max-width:1100px;margin:0 auto;padding:24px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:10px;
+    padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.04);}
+  .step-label{display:inline-block;background:var(--accent);color:white;
+    padding:3px 10px;border-radius:12px;font-size:.8em;font-weight:600;
+    margin-bottom:8px;letter-spacing:.3px;}
+  .step-label.step-final{background:var(--primary)}
+  h2{color:var(--primary);margin:0 0 8px;font-size:1.2em}
+  h3{color:var(--primary);margin:16px 0 6px;font-size:1.05em}
+  .question{font-size:1.05em;font-weight:600;margin:10px 0 14px}
+  .options{display:flex;flex-direction:column;gap:8px}
+  .opt-btn{text-align:left;background:white;border:2px solid var(--border);
+    border-radius:8px;padding:12px 14px;cursor:pointer;
+    font-size:.95em;transition:all .15s;color:var(--text);}
+  .opt-btn:hover{border-color:var(--accent);background:var(--light)}
+  .opt-btn.selected{border-color:var(--accent);background:var(--light)}
+  .opt-btn.opt-correct{border-color:var(--success);background:#E8F5EA}
+  .opt-btn.opt-wrong{border-color:#B8252F;background:#FDE2E4}
+  .opt-btn.opt-disabled{cursor:default;pointer-events:none}
+  .result{background:linear-gradient(135deg,#1B7F37,#2BA84A);color:white;
+    padding:20px;border-radius:10px;margin-bottom:16px;}
+  .result h2{color:white;font-size:1.5em;margin:0 0 6px}
+  .result .sub{opacity:.95;font-size:.95em}
+  .btn-row{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+  .btn{padding:10px 18px;border-radius:6px;border:none;cursor:pointer;
+    font-weight:600;font-size:.95em;transition:all .15s;}
+  .btn-primary{background:var(--accent);color:white}
+  .btn-primary:hover{background:var(--primary)}
+  .btn-secondary{background:white;color:var(--accent);border:2px solid var(--accent)}
+  .btn-secondary:hover{background:var(--light)}
+  .footer-note{margin-top:30px;padding:14px;background:#F0F4F8;border-radius:8px;
+    font-size:.85em;color:var(--muted);text-align:center;}
+  .progress{display:flex;gap:4px;margin-bottom:16px;}
+  .pdot{flex:0 0 auto;width:28px;height:6px;background:var(--border);border-radius:3px}
+  .pdot.active{background:var(--accent)}
+  .pdot.done{background:var(--success)}
+  .pdot.final{background:var(--primary);opacity:.35}
+  .pdot.final.active{opacity:1}
+  .pdot.final.done{background:var(--success);opacity:1}
+  /* Scenario UI */
+  .scenario-header{display:flex;justify-content:space-between;align-items:center;
+    margin-bottom:12px;flex-wrap:wrap;gap:10px;}
+  .scenario-count{font-size:.85em;color:var(--muted);font-weight:600;}
+  .difficulty-tag{display:inline-block;padding:3px 10px;border-radius:12px;
+    font-size:.75em;font-weight:600;}
+  .diff-easy{background:#E0F2E1;color:#1B7F37}
+  .diff-medium{background:#FFF3CD;color:#856404}
+  .diff-hard{background:#F8D7DA;color:#721C24}
+  .scenario-body{background:#FAFCFE;border-left:4px solid var(--accent);
+    padding:14px 18px;border-radius:6px;margin:12px 0 18px;
+    font-size:1em;line-height:1.6;}
+  .scenario-body strong{color:var(--primary)}
+  .feedback-correct{background:linear-gradient(135deg,#1B7F37,#2BA84A);
+    color:white;padding:18px 22px;border-radius:10px;margin:14px 0;}
+  .feedback-incorrect{background:linear-gradient(135deg,#B8252F,#D63340);
+    color:white;padding:18px 22px;border-radius:10px;margin:14px 0;}
+  .feedback-icon{font-size:1.3em;margin-right:8px}
+  .feedback-title{font-weight:700;font-size:1.15em;margin-bottom:6px}
+  .why-not-box{margin-top:10px;padding:10px 14px;background:rgba(255,255,255,.18);
+    border-radius:6px;font-size:.9em;}
+  .why-not-box strong{display:block;margin-bottom:3px;}
+  .walkthrough{background:#F0F4F8;border-radius:8px;padding:14px 18px;margin:12px 0;}
+  .walkthrough h4{color:var(--primary);margin:0 0 10px;font-size:1em;}
+  .walk-step{padding:8px 10px;margin:6px 0;background:white;border-radius:6px;
+    border-left:3px solid var(--accent);}
+  .walk-step .q-text{font-weight:600;color:var(--primary);font-size:.95em}
+  .walk-step .a-text{color:var(--text);font-size:.92em;margin-top:3px}
+  .walk-step .a-text strong{color:var(--success)}
+  .score-pill{display:inline-block;background:var(--primary);color:white;
+    padding:5px 12px;border-radius:12px;font-size:.85em;font-weight:600;}
+  .test-select-box{background:#EEF4FB;border:2px solid var(--accent);border-radius:10px;
+    padding:16px 18px;margin:10px 0 6px;}
+  .test-select-box .ts-label{font-size:.78em;font-weight:700;letter-spacing:.4px;
+    color:var(--accent);text-transform:uppercase;margin-bottom:10px;}
+  /* Filter / shuffle bar */
+  .filter-bar{display:flex;gap:8px;align-items:center;margin-bottom:16px;flex-wrap:wrap;}
+  .filter-bar .filter-label{font-size:.82em;font-weight:600;color:var(--muted);}
+  .filter-btn{padding:5px 13px;border-radius:20px;border:2px solid var(--border);
+    background:white;cursor:pointer;font-size:.8em;font-weight:600;color:var(--muted);
+    transition:all .15s;}
+  .filter-btn:hover{border-color:var(--accent);color:var(--accent)}
+  .filter-btn.active{background:var(--accent);color:white;border-color:var(--accent)}
+  .filter-btn.diff-easy-btn.active{background:#1B7F37;border-color:#1B7F37}
+  .filter-btn.diff-medium-btn.active{background:#856404;border-color:#856404}
+  .filter-btn.diff-hard-btn.active{background:#721C24;border-color:#721C24}
+  .shuffle-btn{padding:5px 13px;border-radius:20px;border:2px solid var(--border);
+    background:white;cursor:pointer;font-size:.8em;font-weight:600;color:var(--muted);
+    transition:all .15s;margin-left:auto;}
+  .shuffle-btn:hover{border-color:var(--accent);color:var(--accent)}
+  .shuffle-btn.active{background:var(--primary);color:white;border-color:var(--primary)}
+  .empty-filter{text-align:center;color:var(--muted);padding:30px;font-size:.95em;}
+  @media(max-width:600px){
+    header{padding:16px 18px}
+    header h1{font-size:1.25em}
+    header p{font-size:.85em}
+    .container{padding:12px}
+    .card{padding:14px}
+    .question{font-size:1em}
+    .opt-btn{font-size:.9em;padding:10px 12px}
+    .btn{padding:10px 14px;font-size:.9em;width:100%}
+    .btn-row{flex-direction:column}
+    .scenario-header{flex-direction:column;align-items:flex-start}
+    .feedback-correct,.feedback-incorrect{padding:14px 16px}
+    .feedback-title{font-size:1.05em}
+    .walkthrough{padding:12px 12px}
+    .walk-step{padding:8px 8px}
+    .result{padding:14px}
+    .result h2{font-size:1.25em}
+    .score-pill{font-size:.78em;padding:4px 10px}
+    .footer-note{font-size:.78em}
+    .shuffle-btn{margin-left:0}
+  }
+  .attribution{margin-top:24px;padding:18px 20px;background:#FFFFFF;
+    border:1px solid var(--border);border-left:4px solid var(--accent);
+    border-radius:8px;font-size:.85em;color:var(--muted);line-height:1.55;}
+  .attribution .attrib-title{font-weight:700;color:var(--primary);
+    font-size:1.05em;margin-bottom:8px;}
+  .attribution .cite{background:#F7FAFC;border:1px solid var(--border);
+    border-radius:6px;padding:10px 12px;margin:10px 0;font-size:.95em;color:#37474F;}
+  .attribution a{color:var(--accent);text-decoration:none;}
+  .attribution a:hover{text-decoration:underline;}
+  .attribution .lic-row{display:flex;align-items:center;gap:10px;
+    flex-wrap:wrap;margin-top:10px;}
+  .cc-badge{display:inline-flex;align-items:center;gap:5px;
+    background:var(--primary);color:#fff;padding:4px 10px;border-radius:4px;
+    font-weight:700;font-size:.9em;letter-spacing:.5px;}
+  .attribution .ai-note{margin-top:10px;padding-top:10px;
+    border-top:1px solid var(--border);font-size:.95em;}
+</style>
+</head>
+<body>
+<header>
+  <h1>Practice Scenarios</h1>
+  <p>PHR 952 Biostatistics &middot; Work through 18 clinical scenarios and select the appropriate statistical test</p>
+</header>
+<div class="container">
+  <div class="filter-bar" id="filter-bar">
+    <span class="filter-label">Filter:</span>
+    <button class="filter-btn active" data-filter="all">All (18)</button>
+    <button class="filter-btn diff-easy-btn" data-filter="easy">Easy</button>
+    <button class="filter-btn diff-medium-btn" data-filter="medium">Medium</button>
+    <button class="filter-btn diff-hard-btn" data-filter="hard">Hard</button>
+    <button class="shuffle-btn" id="shuffle-btn" title="Randomize scenario order">⇄ Shuffle</button>
+  </div>
+  <div id="practice-container" class="card"></div>
+  <div id="practice-feedback"></div>
+  <div class="footer-note">
+    Source: Garrett JG / UNC, 2012. Scenarios adapted from PHR 952 Biostatistics slides (slides 35, 84, 122). Scenarios 13–18 cover survival analysis, paired categorical data, and multivariable regression.
+  </div>
+  <div class="attribution">
+    <div class="attrib-title">About this resource</div>
+    <div><strong>Practice Scenarios</strong> &mdash; an interactive teaching tool for PHR 952 Biostatistics.</div>
+
+    <div class="cite">
+      <strong>Cite as:</strong><br>
+      Moga D. <em>Practice Scenarios</em>. PHR 952 Biostatistics.
+      University of Kentucky College of Pharmacy; 2026.
+      Available at: <a href="https://epidmoga.github.io/phr952-biostats/practice_scenarios.html">https://epidmoga.github.io/phr952-biostats/practice_scenarios.html</a>
+    </div>
+
+    <div class="lic-row">
+      <span class="cc-badge">CC BY 4.0</span>
+      <span>&copy; 2026 Daniela Moga. Licensed under a
+        <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">Creative&nbsp;Commons Attribution 4.0 International License</a>.
+        You may share and adapt this material for any purpose, including commercially,
+        provided you give appropriate credit to the author.</span>
+    </div>
+
+    <div class="ai-note">
+      <strong>Development note:</strong> This tool was developed by the author with AI assistance
+      (Claude, Anthropic). All instructional design, clinical examples, statistical content,
+      and pedagogical decisions are the author's own.
+      Questions or feedback: <a href="mailto:daniela.moga@uky.edu">daniela.moga@uky.edu</a>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Shared step templates ──────────────────────────────────────────
+const STEP_NVARS = {
+  q:"Step 1 — How many variables are in this question?",
+  hint:"Count distinct columns from your dataset that enter THIS comparison.",
+  options:["One variable","Two variables (one Y, one X)","Three or more (need adjustment for confounders)"]
+};
+const STEP_YTYPE = {
+  q:"Step — What type is the OUTCOME (Y)?",
+  options:["Continuous (mmHg, %, kg…)","Categorical / binary (yes/no, A/B/AB/O…)"]
+};
+const STEP_YTYPE_EXT = {
+  q:"Step — What type is the OUTCOME (Y)?",
+  options:[
+    "Continuous (mmHg, %, kg…)",
+    "Categorical / binary (yes/no, positive/negative…)",
+    "Time-to-event (days until the event; some subjects may not have had the event yet — they are censored)"
+  ]
+};
+const STEP_YTYPE_MULTI = {
+  q:"Step 2 — What type is the OUTCOME (Y)?",
+  hint:"The outcome type determines which regression model to use.",
+  options:[
+    "Continuous (e.g., blood pressure, A1c, length of stay)",
+    "Binary (e.g., dead/alive, readmitted yes/no, adherent yes/no)",
+    "Count or rate (e.g., ED visits per year, hospitalizations per person-year)",
+    "Time-to-event (e.g., days to death or readmission; some subjects censored)"
+  ]
+};
+const STEP_XTYPE = {
+  q:"Step — What type is the EXPOSURE (X)?",
+  options:["Continuous","Categorical / discrete"]
+};
+const STEP_YNORM = {
+  q:"Step — Is the outcome Y approximately normally distributed?",
+  hint:"Shapiro–Wilk (preferred, especially for n < 50) or Kolmogorov–Smirnov: H₀ = data are normal. p > 0.05 → treat as normal. Always pair with visual check (histogram + Q–Q plot).",
+  options:["Yes — approximately normal (Shapiro–Wilk p > 0.05)","No — skewed, small n, or Shapiro–Wilk p < 0.05"]
+};
+const STEP_NCAT = {
+  q:"Step — How many categories does X have?",
+  options:["Exactly 2 (e.g., drug vs placebo)","More than 2 (e.g., 3 drugs, 3 MI types)"]
+};
+const STEP_PAIRED = {
+  q:"Step — Are the two groups independent or paired?",
+  hint:"Paired = same subjects measured twice (before/after) or matched.",
+  options:["Independent (different subjects in each group)","Paired (same subjects, two timepoints)"]
+};
+const STEP_PAIRED_CAT = {
+  q:"Step — Are the observations independent or paired/matched?",
+  hint:"Paired = same patient measured at two timepoints. Matched = each case is paired 1:1 with a specific control.",
+  options:["Independent (different subjects in each group)","Paired or matched (same subjects, or matched case-control pairs)"]
+};
+const STEP_BOTHNORM = {
+  q:"Step — Are BOTH X and Y normally distributed?",
+  options:["Yes — both bell-shaped","No — one or both non-normal (or ordinal)"]
+};
+const STEP_2X2_SAMPLE = {
+  q:"Step — Sample size: are all expected cell counts ≥ 5?",
+  hint:"Expected cell = (row total × column total) / grand total.",
+  options:["Yes — large enough","No — at least one expected cell < 5"]
+};
+const STEP_CAT_NCAT = {
+  q:"Step — How many categories do X and Y have?",
+  options:["Both have exactly 2 (a 2×2 table)","X and/or Y has more than 2"]
+};
+const STEP_UNI_TYPE = {
+  q:"Step 2 — What type is the variable?",
+  options:["Continuous","Categorical / binary","Categorical with > 2 levels"]
+};
+const STEP_UNI_NORM = {
+  q:"Step — Is it approximately normally distributed?",
+  options:["Yes","No"]
+};
+const STEP_UNI_PURPOSE = {
+  q:"Step — What do you want to do?",
+  options:["Just describe it","Test it against a known reference value"]
+};
+const STEP_ADJUSTED = {
+  q:"Step — Are you adjusting for confounders?",
+  hint:"Unadjusted = compare groups directly. Adjusted = control for variables like age, sex, comorbidities. In randomized trials, adjustment may still not be needed.",
+  options:["No — unadjusted comparison of groups","Yes — adjusting for one or more confounders"]
+};
+
+// ── Scenarios ──────────────────────────────────────────────────────
+const SCENARIOS = [
+
+  // 1) EF vs CVD → 2-sample t-test
+  {
+    id:1, difficulty:"easy",
+    title:"Ejection fraction & cardiovascular disease",
+    body:"A team enrolls <strong>2,386 adults</strong>: 427 with cardiovascular disease (CVD) and 1,959 without. They measure <strong>ejection fraction (EF, %)</strong>, which is approximately normally distributed. Question: <strong>does mean EF differ between people with and without CVD?</strong>",
+    steps:[
+      {...STEP_NVARS, correct:1, why:"Outcome Y = EF (one column); exposure X = CVD status (another column)."},
+      {...STEP_YTYPE, correct:0, why:"EF is a measured percentage — continuous."},
+      {...STEP_XTYPE, correct:1, why:"CVD is a category: yes vs no."},
+      {...STEP_YNORM, correct:0, why:"The scenario states EF is approximately normally distributed."},
+      {...STEP_NCAT, correct:0, why:"CVD has exactly 2 levels."},
+      {...STEP_PAIRED, correct:0, why:"Different people make up the CVD and non-CVD groups."}
+    ],
+    testOptions:["Two-sample (independent) t-test","Paired t-test","Wilcoxon Rank-Sum (Mann–Whitney U)","One-way ANOVA"],
+    testCorrect:0,
+    finalTest:"Two-sample (independent) t-test",
+    finalNote:"From the slides: t = 2.0117, p = 0.0444 (two-sided). Reject H₀ — EF differs by CVD status.",
+    testWrongWhy:{1:"A paired t-test is for the same subjects measured twice. These are two different groups of people.",2:"The Wilcoxon rank-sum is the non-parametric alternative for when Y is skewed. EF is stated to be normally distributed, so the parametric t-test is preferred.",3:"ANOVA compares means across 3 or more groups. There are only 2 groups here (CVD yes/no)."}
+  },
+
+  // 2) Exercise & SBP → paired t-test
+  {
+    id:2, difficulty:"easy",
+    title:"Exercise and systolic blood pressure",
+    body:"A clinic measures <strong>systolic BP in the SAME 350 patients</strong> at baseline and again after <strong>3 months of exercise</strong>. SBP is normally distributed. Question: <strong>did SBP change after the program?</strong>",
+    steps:[
+      {...STEP_NVARS, correct:1, why:"Y = SBP, X = timepoint (baseline vs 3 months)."},
+      {...STEP_YTYPE, correct:0, why:"SBP in mmHg is continuous."},
+      {...STEP_XTYPE, correct:1, why:"Timepoint is a category (baseline, 3 months)."},
+      {...STEP_YNORM, correct:0, why:"The scenario states SBP is normally distributed."},
+      {...STEP_NCAT, correct:0, why:"Two timepoints = 2 categories of X."},
+      {...STEP_PAIRED, correct:1, why:"The SAME 350 patients are measured at two timepoints → paired."}
+    ],
+    testOptions:["Two-sample (independent) t-test","Paired t-test","Wilcoxon Signed-Rank Test","One-sample t-test"],
+    testCorrect:1,
+    finalTest:"Paired t-test",
+    finalNote:"From the slides: mean reduction = 8.1 mmHg, t = 17.45, p < 0.0001. Reject H₀. Important caveat: without a control group, regression to the mean or natural history cannot be ruled out.",
+    testWrongWhy:{0:"A two-sample t-test assumes independent groups. These are the same 350 patients measured twice — using the paired t-test gains power by removing between-subject variability.",2:"The Wilcoxon signed-rank is the non-parametric paired alternative for skewed differences. SBP is stated to be normally distributed, so the parametric paired t-test is preferred.",3:"A one-sample t-test compares a single mean to a fixed reference value. Here we are comparing means at two timepoints within the same subjects."}
+  },
+
+  // 3) Prior MI & EF → one-way ANOVA
+  {
+    id:3, difficulty:"medium",
+    title:"Prior MI and ejection fraction",
+    body:"Patients are grouped into <strong>No prior MI / Old MI / Recent MI</strong>. EF is normally distributed in each group. Question: <strong>does mean EF differ across these three groups?</strong>",
+    steps:[
+      {...STEP_NVARS, correct:1, why:"Y = EF, X = prior-MI category."},
+      {...STEP_YTYPE, correct:0, why:"EF is continuous."},
+      {...STEP_XTYPE, correct:1, why:"Prior-MI category is discrete."},
+      {...STEP_YNORM, correct:0, why:"EF is normal."},
+      {...STEP_NCAT, correct:1, why:"No MI / Old MI / Recent MI = 3 categories."}
+    ],
+    testOptions:["Two-sample (independent) t-test","Kruskal–Wallis Test","One-way ANOVA","Pearson's Chi-square"],
+    testCorrect:2,
+    finalTest:"One-way ANOVA",
+    finalNote:"From the slides: F = 45.34, p < 0.0001. Run Bonferroni/Tukey post-hoc to find which pairs differ.",
+    testWrongWhy:{0:"A two-sample t-test only handles 2 groups. With 3 MI categories, ANOVA is required. Running multiple t-tests inflates the type I error rate.",1:"Kruskal–Wallis is the non-parametric alternative for skewed Y. EF is normally distributed, so the parametric ANOVA is preferred.",3:"Chi-square tests associations between categorical variables. EF is continuous — use ANOVA to compare means."}
+  },
+
+  // 4) Sex & in-hospital mortality → chi-square
+  {
+    id:4, difficulty:"medium",
+    title:"Sex and in-hospital mortality",
+    body:"Among <strong>2,523 hospitalizations</strong>: 1,882 men (54 died) and 641 women (29 died). All expected cell counts exceed 5. Question: <strong>is sex associated with in-hospital mortality?</strong>",
+    steps:[
+      {...STEP_NVARS, correct:1, why:"Y = mortality (yes/no), X = sex (M/F)."},
+      {...STEP_YTYPE, correct:1, why:"Mortality is binary."},
+      {...STEP_XTYPE, correct:1, why:"Sex is binary."},
+      {...STEP_CAT_NCAT, correct:0, why:"Both Y and X have 2 categories — a 2×2 table."},
+      {...STEP_PAIRED_CAT, correct:0, why:"Different people are in the male and female groups — independent observations."},
+      {...STEP_2X2_SAMPLE, correct:0, why:"Sample is large (N = 2,523), expected cells all ≥ 5."}
+    ],
+    testOptions:["Fisher's Exact Test","Pearson's Chi-square","Chi-square Goodness-of-Fit","Logistic Regression"],
+    testCorrect:1,
+    finalTest:"Pearson's Chi-square",
+    finalNote:"From the slides: χ² = 4.12 (df = 1), p = 0.04. Also report OR or RR for direction + magnitude.",
+    testWrongWhy:{0:"Fisher's exact is for small samples where expected cells < 5. With N = 2,523, chi-square's normal approximation is valid.",2:"Chi-square goodness-of-fit tests a single variable against an expected distribution. Here we have TWO variables (sex and mortality) in a contingency table.",3:"Logistic regression is appropriate when you need to adjust for confounders or when X is continuous. For this unadjusted 2×2 table, chi-square is simpler and standard."}
+  },
+
+  // 5) Small antibiotic pilot → Fisher's
+  {
+    id:5, difficulty:"medium",
+    title:"Small pilot of two antibiotics",
+    body:"A pilot of <strong>20 patients</strong>: 10 on Antibiotic A (8 cured) and 10 on B (3 cured). Several expected cell counts are <strong>&lt; 5</strong>. Question: <strong>do A and B differ in cure rate?</strong>",
+    steps:[
+      {...STEP_NVARS, correct:1, why:"Y = cure (yes/no), X = drug (A/B)."},
+      {...STEP_YTYPE, correct:1, why:"Cure is binary."},
+      {...STEP_XTYPE, correct:1, why:"Drug is binary."},
+      {...STEP_CAT_NCAT, correct:0, why:"2×2 contingency table."},
+      {...STEP_PAIRED_CAT, correct:0, why:"Different patients received each antibiotic — independent groups."},
+      {...STEP_2X2_SAMPLE, correct:1, why:"Small sample with expected cells < 5 — chi-square's normal approximation isn't valid."}
+    ],
+    testOptions:["Fisher's Exact Test","Pearson's Chi-square","One-sample Binomial Test","Wilcoxon Rank-Sum (Mann–Whitney U)"],
+    testCorrect:0,
+    finalTest:"Fisher's Exact Test",
+    finalNote:"Computes an exact p-value by enumerating all tables with the same marginals. Also report OR with 95% CI.",
+    testWrongWhy:{1:"Chi-square requires all expected cells ≥ 5. With n = 20 and unequal cure rates, several expected cells are < 5 — use Fisher's exact instead.",2:"One-sample binomial tests a single proportion against a known reference value. Here we are comparing two groups.",3:"Mann–Whitney compares a continuous, non-normal outcome. Cure (yes/no) is binary — a categorical test is needed."}
+  },
+
+  // 6) 3 drugs, skewed pain → Kruskal–Wallis
+  {
+    id:6, difficulty:"medium",
+    title:"Pain scores across three analgesic protocols",
+    body:"60 patients are randomized to <strong>Drug A, Drug B, or Drug C</strong>. Pain at 24 h on a 0–10 NRS is <strong>strongly right-skewed</strong> (Shapiro–Wilk p &lt; 0.001). Question: <strong>does pain differ across the 3 drugs?</strong>",
+    steps:[
+      {...STEP_NVARS, correct:1, why:"Y = pain score, X = drug."},
+      {...STEP_YTYPE, correct:0, why:"NRS pain 0–10 is treated as continuous."},
+      {...STEP_XTYPE, correct:1, why:"Drug A/B/C is discrete."},
+      {...STEP_YNORM, correct:1, why:"Shapiro–Wilk p < 0.001 → reject normality."},
+      {...STEP_NCAT, correct:1, why:"3 drug arms = more than 2 categories."}
+    ],
+    testOptions:["One-way ANOVA","Wilcoxon Rank-Sum (Mann–Whitney U)","Wilcoxon Signed-Rank Test","Kruskal–Wallis Test"],
+    testCorrect:3,
+    finalTest:"Kruskal–Wallis test",
+    finalNote:"Non-parametric ANOVA. Post-hoc: Dunn's test or pairwise Mann–Whitney with Bonferroni correction.",
+    testWrongWhy:{0:"ANOVA assumes normally distributed Y. Shapiro–Wilk p < 0.001 indicates strong skew — use the non-parametric Kruskal–Wallis instead.",1:"Mann–Whitney compares 2 independent groups. With 3 drug arms, Kruskal–Wallis is the correct extension.",2:"Wilcoxon signed-rank is for paired (within-subject) comparisons. These are 3 independent groups."}
+  },
+
+  // 7) Likert adherence vs HbA1c → Spearman
+  {
+    id:7, difficulty:"hard",
+    title:"Adherence Likert and HbA1c",
+    body:"In 60 patients with T2DM you record <strong>adherence on a 5-point Likert</strong> (ordinal) and <strong>HbA1c (%)</strong> which is right-skewed. Question: <strong>is higher adherence associated with lower HbA1c?</strong>",
+    steps:[
+      {...STEP_NVARS, correct:1, why:"X = adherence, Y = HbA1c."},
+      {...STEP_YTYPE, correct:0, why:"HbA1c is a continuous %."},
+      {...STEP_XTYPE, correct:0, why:"Likert with many ordered levels is treated as numeric/ordinal for correlation."},
+      {...STEP_BOTHNORM, correct:1, why:"Adherence is ordinal and HbA1c is skewed → not both normal."}
+    ],
+    testOptions:["Pearson's Correlation / Simple Linear Regression","Spearman's Rank Correlation","Wilcoxon Signed-Rank Test","Wilcoxon Rank-Sum (Mann–Whitney U)"],
+    testCorrect:1,
+    finalTest:"Spearman's rank correlation",
+    finalNote:"Spearman's ρ works on ranks — robust to skew and appropriate for ordinal data. e.g., ρ = −0.42, p = 0.001.",
+    testWrongWhy:{0:"Pearson's r assumes both variables are continuous and approximately normal. Adherence is ordinal and HbA1c is skewed — Spearman's handles both.",2:"Wilcoxon signed-rank is for paired before/after comparisons. Here we want to measure correlation between two variables, not compare timepoints.",3:"Mann–Whitney compares two independent groups on a continuous outcome. Here we have two continuous/ordinal variables and want to measure their association."}
+  },
+
+  // 8) Weight vs dose → Pearson / linear regression
+  {
+    id:8, difficulty:"medium",
+    title:"Body weight and required dose",
+    body:"200 patients have <strong>body weight (kg)</strong> and <strong>actual dose (mg)</strong>. Both are continuous, approximately normal, and the scatterplot is linear. Question: <strong>quantify the linear association.</strong>",
+    steps:[
+      {...STEP_NVARS, correct:1, why:"X = weight, Y = dose."},
+      {...STEP_YTYPE, correct:0, why:"Dose in mg is continuous."},
+      {...STEP_XTYPE, correct:0, why:"Weight in kg is continuous."},
+      {...STEP_BOTHNORM, correct:0, why:"Both variables are approximately normal."}
+    ],
+    testOptions:["Spearman's Rank Correlation","Two-sample (independent) t-test","Pearson's Correlation / Simple Linear Regression","Pearson's Chi-square"],
+    testCorrect:2,
+    finalTest:"Pearson's correlation / simple linear regression",
+    finalNote:"Pearson's r quantifies the strength of the linear association; regression gives the slope (Δ dose per +1 kg).",
+    testWrongWhy:{0:"Spearman's is for non-normal or ordinal data. Both variables are stated to be normal and continuous — Pearson's is the more powerful and informative choice.",1:"A two-sample t-test compares means between groups. Weight is continuous, not a grouping variable.",3:"Chi-square tests associations between categorical variables. Both dose and weight are continuous."}
+  },
+
+  // 9) Clinic A1c vs ADA target → one-sample t-test
+  {
+    id:9, difficulty:"hard",
+    title:"Clinic A1c vs ADA target",
+    body:"You audit <strong>60 patients</strong>. Mean HbA1c = 7.6%, SD = 0.9%. HbA1c is approximately normal. The <strong>ADA target = 7.0%</strong>. Question: <strong>is the clinic's mean A1c different from 7.0%?</strong>",
+    steps:[
+      {...STEP_NVARS, correct:0, why:"Only HbA1c is measured; we're comparing it to a fixed number, not to another group of patients."},
+      {...STEP_UNI_TYPE, correct:0, why:"HbA1c (%) is a continuous measurement."},
+      {...STEP_UNI_NORM, correct:0, why:"Stated normal."},
+      {...STEP_UNI_PURPOSE, correct:1, why:"We want to TEST the mean against a known reference (μ₀ = 7.0)."}
+    ],
+    testOptions:["One-sample t-test","Two-sample (independent) t-test","Paired t-test","One-sample Binomial / One-proportion z-test"],
+    testCorrect:0,
+    finalTest:"One-sample t-test",
+    finalNote:"t = (7.6 − 7.0)/(0.9/√60) = 5.16, df = 59, p < 0.0001. Reject H₀ — clinic A1c is significantly higher than the 7.0% target.",
+    testWrongWhy:{1:"A two-sample t-test compares means from two groups of patients. The ADA target of 7.0% is a fixed reference value, not a second group.",2:"A paired t-test compares within-subject changes at two timepoints. There is only one measurement per patient here.",3:"A one-proportion z-test is for testing a binary proportion. HbA1c is continuous — use the one-sample t-test."}
+  },
+
+  // 10) Adherence rate audit → one-sample binomial
+  {
+    id:10, difficulty:"hard",
+    title:"Adherence rate audit",
+    body:"Your program <strong>expects 80% adherence</strong>. You audit <strong>100 patients</strong> and find <strong>72 adherent</strong>. Question: <strong>is observed adherence different from 80%?</strong>",
+    steps:[
+      {...STEP_NVARS, correct:0, why:"Only one variable (adherence yes/no); the 80% is a fixed reference, not another group."},
+      {...STEP_UNI_TYPE, correct:1, why:"Adherence is a binary category."},
+      {...STEP_UNI_PURPOSE, correct:1, why:"We want to test the observed proportion against a known value (p₀ = 0.80)."}
+    ],
+    testOptions:["One-sample t-test","One-sample Wilcoxon Signed-Rank","One-sample Binomial / One-proportion z-test","Pearson's Chi-square"],
+    testCorrect:2,
+    finalTest:"One-sample binomial / one-proportion z-test",
+    finalNote:"z = (0.72 − 0.80)/√(0.80 × 0.20/100) = −2.0, p = 0.046. Reject H₀ — adherence is below the 80% target.",
+    testWrongWhy:{0:"The one-sample t-test tests a continuous mean. Adherence is binary (yes/no) — the binomial test is appropriate.",1:"Wilcoxon signed-rank tests a continuous median. Adherence is binary — use the exact binomial or one-proportion z-test.",3:"Chi-square tests the association between two categorical variables. There is only one variable here, tested against a known reference proportion."}
+  },
+
+  // 11) Blood-type distribution → chi-square goodness of fit
+  {
+    id:11, difficulty:"hard",
+    title:"Blood-type distribution",
+    body:"Registry of <strong>400 patients</strong>: A=150, O=200, B=40, AB=10. US distribution: A 42%, O 45%, B 10%, AB 3%. Question: <strong>does the registry match the US distribution?</strong>",
+    steps:[
+      {...STEP_NVARS, correct:0, why:"Only blood type is measured; the US distribution is a fixed expected pattern, not another group of patients."},
+      {...STEP_UNI_TYPE, correct:2, why:"Blood type has 4 nominal categories."},
+      {...STEP_UNI_PURPOSE, correct:1, why:"We want to test observed frequencies against an expected distribution."}
+    ],
+    testOptions:["Pearson's Chi-square (contingency table)","Fisher's Exact Test","One-sample Binomial / One-proportion z-test","Chi-square Goodness-of-Fit"],
+    testCorrect:3,
+    finalTest:"Chi-square goodness-of-fit",
+    finalNote:"Expected: A=168, O=180, B=40, AB=12. χ² ≈ 4.48, df=3, p ≈ 0.21 → fail to reject H₀ — the registry is consistent with the US distribution.",
+    testWrongWhy:{0:"A contingency table chi-square tests the association between TWO categorical variables. Here we have ONE variable (blood type) tested against a known reference distribution.",1:"Fisher's exact is for small-sample 2×2 tables. This is a single variable with 4 categories — use goodness-of-fit.",2:"One-proportion z-test is for a single binary proportion vs a reference. Blood type has 4 categories — use chi-square goodness-of-fit."}
+  },
+
+  // 12) Small skewed LDL change → Wilcoxon signed-rank
+  {
+    id:12, difficulty:"hard",
+    title:"Small pilot, skewed LDL change",
+    body:"In a <strong>pilot of 12 patients</strong>, LDL is measured <strong>before and after</strong> 8 weeks of a new diet. The paired differences are <strong>strongly skewed</strong>. Question: <strong>did LDL change after the diet?</strong>",
+    steps:[
+      {...STEP_NVARS, correct:1, why:"Y = LDL, X = timepoint."},
+      {...STEP_YTYPE, correct:0, why:"LDL is continuous."},
+      {...STEP_XTYPE, correct:1, why:"Timepoint = 2-level category."},
+      {...STEP_YNORM, correct:1, why:"Paired differences are skewed and n = 12 is small."},
+      {...STEP_NCAT, correct:0, why:"Before vs after = 2 categories."},
+      {...STEP_PAIRED, correct:1, why:"SAME 12 patients measured twice → paired."}
+    ],
+    testOptions:["Paired t-test","Wilcoxon Signed-Rank Test","Kruskal–Wallis Test","Wilcoxon Rank-Sum (Mann–Whitney U)"],
+    testCorrect:1,
+    finalTest:"Wilcoxon Signed-Rank test",
+    finalNote:"Non-parametric paired test. Ranks the absolute paired differences and re-signs them. Appropriate when differences are skewed or n is small.",
+    testWrongWhy:{0:"The paired t-test requires that the differences are approximately normally distributed. With n=12 and skewed differences, the non-parametric Wilcoxon signed-rank is safer.",2:"Kruskal–Wallis is for 3+ independent groups. This is a paired comparison of 2 timepoints.",3:"Mann–Whitney (Wilcoxon rank-sum) is for two independent groups. These are the same 12 patients measured twice — use the paired version (signed-rank)."}
+  },
+
+  // 13) Kaplan-Meier / log-rank
+  {
+    id:13, difficulty:"medium",
+    title:"Relapse-free survival: two chemotherapy regimens",
+    body:"An oncology trial randomizes <strong>120 patients</strong> to Regimen A (n=60) or Regimen B (n=60). The outcome is <strong>time to first relapse (days)</strong>; 22 patients did not relapse before study end and are <strong>censored</strong>. This is a randomized trial — no adjustment for confounders is needed. Question: <strong>does relapse-free survival differ between the two regimens?</strong>",
+    steps:[
+      {...STEP_NVARS, correct:1, why:"Two columns enter the analysis: time-to-relapse (Y) and regimen (X)."},
+      {...STEP_YTYPE_EXT, correct:2, why:"The outcome is days to relapse, with some patients censored — a classic time-to-event (survival) outcome."},
+      {...STEP_XTYPE, correct:1, why:"Regimen is a categorical group variable (A vs B)."},
+      {...STEP_ADJUSTED, correct:0, why:"Randomized trial — groups are balanced by design; an unadjusted comparison (log-rank) is appropriate."}
+    ],
+    testOptions:["Two-sample (independent) t-test","Pearson's Chi-square","Log-rank Test + Kaplan–Meier Curves","Cox Proportional Hazards Regression"],
+    testCorrect:2,
+    finalTest:"Log-rank Test + Kaplan–Meier Curves",
+    finalNote:"K–M estimates the survival function at each event time; the log-rank test assesses whether curves differ significantly. For an adjusted analysis, use Cox regression.",
+    testWrongWhy:{0:"The t-test compares means of a normally distributed continuous variable. It cannot handle time-to-event data with censored observations — those censored subjects would simply be dropped or misrepresented.",1:"Chi-square tests associations between categorical variables. Time-to-relapse is a time-to-event outcome with censoring — it requires survival analysis methods.",3:"Cox regression is the correct choice when you need to adjust for confounders. In a randomized trial where no adjustment is needed, the simpler log-rank test is appropriate and sufficient."}
+  },
+
+  // 14) McNemar's test
+  {
+    id:14, difficulty:"hard",
+    title:"MRSA carriage before and after decolonization",
+    body:"<strong>100 ICU patients</strong> have a nasal swab on admission and again at discharge. The outcome is <strong>MRSA-positive (yes/no)</strong>. Results: 15 positive→negative; 4 negative→positive; 10 positive at both; 71 negative at both. Question: <strong>did decolonization change the proportion of MRSA-positive patients?</strong>",
+    steps:[
+      {...STEP_NVARS, correct:1, why:"Two measurements per patient: MRSA status at admission and at discharge. Y = MRSA status, X = timepoint (before/after)."},
+      {...STEP_YTYPE, correct:1, why:"MRSA status is binary: positive or negative."},
+      {...STEP_XTYPE, correct:1, why:"Timepoint (admission vs discharge) is categorical with 2 levels."},
+      {...STEP_CAT_NCAT, correct:0, why:"Both MRSA status and timepoint have exactly 2 levels — a 2×2 table."},
+      {...STEP_PAIRED_CAT, correct:1, why:"The SAME 100 patients are measured at admission and discharge — paired observations. Chi-square would be wrong here."}
+    ],
+    testOptions:["Pearson's Chi-square","Fisher's Exact Test","Paired t-test","McNemar's Test"],
+    testCorrect:3,
+    finalTest:"McNemar's Test",
+    finalNote:"McNemar's χ² = (|15−4|−1)²/(15+4) = 5.26, p = 0.022. Only discordant pairs (b=15, c=4) contribute — the 81 concordant pairs provide no information about change.",
+    testWrongWhy:{0:"Chi-square assumes independence between observations. The SAME patients are measured twice — using chi-square ignores the pairing and can give a biased p-value.",1:"Fisher's exact is for small independent samples. These are paired observations — McNemar's is the paired equivalent of chi-square/Fisher's for binary outcomes.",2:"The paired t-test compares the mean of a continuous variable across two timepoints. MRSA status is binary (yes/no), not continuous — McNemar's is the correct paired test for binary outcomes."}
+  },
+
+  // 15) Multiple linear regression
+  {
+    id:15, difficulty:"hard",
+    title:"Predictors of systolic blood pressure (adjusted)",
+    body:"A study of <strong>300 patients</strong> estimates the effect of <strong>Drug B vs Drug A</strong> on <strong>systolic blood pressure (SBP, mmHg)</strong>, adjusting for <strong>age and BMI</strong>. All three predictors enter the model. Question: <strong>which regression model is appropriate?</strong>",
+    steps:[
+      {...STEP_NVARS, correct:2, why:"Three predictors (drug, age, BMI) plus one outcome (SBP) = four columns — multivariable analysis requiring adjustment."},
+      {...STEP_YTYPE_MULTI, correct:0, why:"SBP in mmHg is a continuous measurement — the model will produce β coefficients representing mean change in SBP per unit change in each predictor."}
+    ],
+    testOptions:["Multiple Linear Regression","Logistic Regression","Poisson Regression","Cox Proportional Hazards Regression"],
+    testCorrect:0,
+    finalTest:"Multiple Linear Regression",
+    finalNote:"Each β = mean change in SBP per 1-unit increase in that predictor, holding others constant. Report β with 95% CI and p-value for drug group. Check residual normality and homoscedasticity.",
+    testWrongWhy:{1:"Logistic regression models a binary (yes/no) outcome. SBP is continuous — use linear regression.",2:"Poisson regression models count or rate outcomes. SBP is a continuous measurement, not a count.",3:"Cox regression models time-to-event data with censoring. SBP is a continuous cross-sectional measurement."}
+  },
+
+  // 16) Multivariable logistic regression
+  {
+    id:16, difficulty:"hard",
+    title:"30-day readmission: adjusted analysis",
+    body:"A retrospective study of <strong>500 patients</strong> estimates the effect of <strong>Drug B vs Drug A</strong> on <strong>30-day readmission (yes/no)</strong>, adjusting for <strong>Charlson comorbidity index and age</strong>. Question: <strong>which regression model is appropriate?</strong>",
+    steps:[
+      {...STEP_NVARS, correct:2, why:"Three predictors (drug, Charlson score, age) plus one outcome (readmission) = multivariable analysis."},
+      {...STEP_YTYPE_MULTI, correct:1, why:"30-day readmission is binary (yes/no) — the model will produce Odds Ratios (ORs). Note: OR ≈ RR only when the outcome is rare (roughly < 10%)."}
+    ],
+    testOptions:["Multiple Linear Regression","Logistic Regression","Poisson Regression","Cox Proportional Hazards Regression"],
+    testCorrect:1,
+    finalTest:"Multivariable Logistic Regression",
+    finalNote:"exp(β) for Drug B vs A = adjusted OR. Report OR with 95% CI and p-value. Also report AUC/c-statistic for discrimination.",
+    testWrongWhy:{0:"Linear regression is for continuous outcomes. 30-day readmission is binary — logistic regression is required.",2:"Poisson regression models counts (0, 1, 2, 3… events). Readmission within 30 days is a single binary event, not a count.",3:"Cox regression handles time-to-event outcomes with censoring. If we only record whether readmission occurred by day 30 (not exactly when), logistic regression is appropriate. If timing matters, Cox would be used."}
+  },
+
+  // 17) Poisson regression
+  {
+    id:17, difficulty:"hard",
+    title:"Emergency department visits by insurance status (adjusted)",
+    body:"An observational study of <strong>800 adults</strong> models the <strong>number of ED visits in the past year</strong> as a function of <strong>insurance status (insured vs uninsured)</strong>, adjusting for <strong>age and Charlson comorbidity score</strong>. Question: <strong>which regression model is appropriate?</strong>",
+    steps:[
+      {...STEP_NVARS, correct:2, why:"Three predictors (insurance, age, Charlson) plus one outcome (ED visit count) = multivariable."},
+      {...STEP_YTYPE_MULTI, correct:2, why:"Number of ED visits is a count (0, 1, 2, 3…) — Poisson or negative binomial regression applies. Check for overdispersion (variance >> mean)."}
+    ],
+    testOptions:["Multiple Linear Regression","Logistic Regression","Poisson Regression","Cox Proportional Hazards Regression"],
+    testCorrect:2,
+    finalTest:"Poisson Regression",
+    finalNote:"exp(β) = Rate Ratio (RR). Check overdispersion: if variance >> mean, use negative binomial regression instead. Report RR with 95% CI for insurance status.",
+    testWrongWhy:{0:"Linear regression assumes a normally distributed, continuous outcome. ED visit counts are non-negative integers — the count data structure violates linear regression assumptions.",1:"Logistic regression is for binary outcomes (event yes/no). ED visits can be 0, 1, 2, or more — it is a count, not a binary event.",3:"Cox regression is for time-to-event outcomes (days until a single event, with censoring). ED visits are a count of events over a fixed period — not a single time-to-event."}
+  },
+
+  // 18) Cox proportional hazards
+  {
+    id:18, difficulty:"hard",
+    title:"Time to readmission after cardiac surgery (adjusted)",
+    body:"Among <strong>400 patients</strong> discharged after cardiac surgery, researchers estimate the effect of <strong>Drug A vs Drug B</strong> on <strong>time to 90-day readmission</strong>, adjusting for <strong>age, sex, and ejection fraction</strong>. 87 patients were not readmitted within 90 days (censored). Question: <strong>which regression model is appropriate?</strong>",
+    steps:[
+      {...STEP_NVARS, correct:2, why:"Four predictors (drug, age, sex, EF) plus one outcome (time to readmission) = multivariable analysis."},
+      {...STEP_YTYPE_MULTI, correct:3, why:"The outcome is days to first readmission, with 87 patients censored — a time-to-event (survival) outcome requiring Cox regression."}
+    ],
+    testOptions:["Multiple Linear Regression","Logistic Regression (readmitted yes/no)","Poisson Regression","Cox Proportional Hazards Regression"],
+    testCorrect:3,
+    finalTest:"Cox Proportional Hazards Regression",
+    finalNote:"exp(β) = Hazard Ratio (HR). Report HR with 95% CI for drug group. Verify proportional hazards assumption (log-log plots, Schoenfeld residuals).",
+    testWrongWhy:{0:"Linear regression is for continuous outcomes. Time-to-readmission is a time-to-event outcome — Cox regression handles the censoring structure that linear regression cannot.",1:"Logistic regression answers 'did readmission occur?' (binary) but discards timing information and cannot properly account for censored observations.",2:"Poisson regression models count outcomes. Time-to-readmission is a single time-to-event measurement with censoring — Cox regression is the appropriate model."}
+  }
+
+];
+
+// ── State ──────────────────────────────────────────────────────────
+let activeFilter = "all";
+let shuffled = false;
+let displayOrder = SCENARIOS.map((_,i)=>i); // indices into SCENARIOS
+let displayPos = 0;
+
+// Per-scenario answer logs indexed by SCENARIOS index (preserved across filter changes)
+let answerLog = SCENARIOS.map(()=>[]);
+let testAnswerLog = SCENARIOS.map(()=>null);
+
+function buildDisplayOrder(){
+  let indices = SCENARIOS.map((_,i)=>i);
+  if(activeFilter !== "all"){
+    indices = indices.filter(i => SCENARIOS[i].difficulty === activeFilter);
+  }
+  if(shuffled){
+    for(let i=indices.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      [indices[i],indices[j]]=[indices[j],indices[i]];
+    }
+  }
+  displayOrder = indices;
+}
+
+function currentScenarioIdx(){ return displayOrder[displayPos]; }
+
+function totalDecisionSteps(s){ return s.steps.length; }
+
+function scoreFor(s,si){
+  const dec=answerLog[si].filter(a=>a&&a.correct).length;
+  const test=testAnswerLog[si]&&testAnswerLog[si].correct?1:0;
+  return dec+test;
+}
+function maxScoreFor(s){ return totalDecisionSteps(s)+1; }
+function totalScore(){
+  return answerLog.reduce((acc,arr)=>acc+arr.filter(a=>a&&a.correct).length,0)
+       + testAnswerLog.reduce((acc,a)=>acc+(a&&a.correct?1:0),0);
+}
+function totalAttempted(){
+  return answerLog.reduce((acc,arr)=>acc+arr.filter(a=>a).length,0)
+       + testAnswerLog.reduce((acc,a)=>acc+(a?1:0),0);
+}
+
+// Step state: per-scenario, stored by SCENARIOS index
+let stepStates = SCENARIOS.map(()=>0); // stepIdx per scenario
+
+function renderPractice(){
+  const c = document.getElementById("practice-container");
+  const fb = document.getElementById("practice-feedback");
+  fb.innerHTML = "";
+
+  if(displayOrder.length === 0){
+    c.innerHTML = `<div class="empty-filter">No scenarios match the selected filter. Choose a different difficulty or reset to "All".</div>`;
+    return;
+  }
+
+  const si = currentScenarioIdx();
+  const s = SCENARIOS[si];
+  const log = answerLog[si];
+  const N = totalDecisionSteps(s);
+  const testAns = testAnswerLog[si];
+  const stepIdx = stepStates[si];
+
+  const atTestSelection = stepIdx === N;
+  const atConclusion = stepIdx > N;
+
+  // ── Header ──────────────────────────────────────────────────────
+  let html = `<div class="scenario-header">
+    <div>
+      <div class="scenario-count">Scenario ${displayPos+1} of ${displayOrder.length}${activeFilter!=="all"?' (filtered)':''}</div>
+      <h2 style="margin:4px 0 0">${s.title}</h2>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <span class="difficulty-tag diff-${s.difficulty}">${s.difficulty.toUpperCase()}</span>
+      <span class="score-pill">Session score: ${totalScore()}/${totalAttempted()}</span>
+    </div>
+  </div>`;
+
+  html += `<div class="scenario-body">${s.body}</div>`;
+
+  // ── Progress dots ────────────────────────────────────────────────
+  let bar = `<div class="progress" style="margin:0 0 14px">`;
+  for(let i=0;i<=N;i++){
+    let cls = "";
+    if(i < N){
+      const ans = log[i];
+      if(ans){ cls = ans.correct ? "done" : "active"; }
+      else if(i === stepIdx && !atConclusion && !atTestSelection) cls = "active";
+    } else {
+      cls = "final";
+      if(testAns){ cls += testAns.correct ? " done" : " active"; }
+      else if(atTestSelection) cls += " active";
+    }
+    bar += `<div class="pdot ${cls}"></div>`;
+  }
+  bar += `</div>`;
+  html += bar;
+
+  // ── PHASE 1: Decision steps ──────────────────────────────────────
+  if(!atTestSelection && !atConclusion){
+    const step = s.steps[stepIdx];
+    const prevAns = log[stepIdx];
+    html += `<div class="step-label">Decision ${stepIdx+1} of ${N}</div>`;
+    html += `<div class="question">${step.q}</div>`;
+    if(step.hint) html += `<p style="color:var(--muted);font-size:.9em;margin:0 0 14px">💡 ${step.hint}</p>`;
+    html += `<div class="options">`;
+    step.options.forEach((opt, i)=>{
+      let cls = "opt-btn";
+      if(prevAns){
+        cls += " opt-disabled";
+        if(i === step.correct) cls += " opt-correct";
+        else if(i === prevAns.chosenIdx && !prevAns.correct) cls += " opt-wrong";
+      }
+      html += `<button class="${cls}" data-idx="${i}">${opt}</button>`;
+    });
+    html += `</div>`;
+
+    if(prevAns){
+      const fbHtml = prevAns.correct
+        ? `<div class="feedback-correct" style="margin-top:14px">
+             <div><span class="feedback-icon">✓</span><span class="feedback-title">Correct</span></div>
+             <div>${step.why}</div>
+           </div>`
+        : `<div class="feedback-incorrect" style="margin-top:14px">
+             <div><span class="feedback-icon">✗</span><span class="feedback-title">Not quite</span></div>
+             <div>The right answer is <strong>${step.options[step.correct]}</strong>. ${step.why}</div>
+           </div>`;
+      html += fbHtml;
+    }
+
+    html += `<div class="btn-row">`;
+    if(stepIdx > 0){
+      html += `<button class="btn btn-secondary" id="prev-step">← Previous step</button>`;
+    } else if(displayPos > 0){
+      html += `<button class="btn btn-secondary" id="prev-scenario">← Previous scenario</button>`;
+    }
+    if(prevAns){
+      if(stepIdx === N - 1){
+        html += `<button class="btn btn-primary" id="select-test">Choose the test →</button>`;
+      } else {
+        html += `<button class="btn btn-primary" id="next-step">Next step →</button>`;
+      }
+    }
+    html += `</div>`;
+
+  // ── PHASE 2: Test selection ──────────────────────────────────────
+  } else if(atTestSelection){
+    html += `<div class="step-label step-final">Final Step — Select the Test</div>`;
+    html += `<div class="question">Based on your decisions above, which statistical test should you apply to this scenario?</div>`;
+    html += `<div class="test-select-box">`;
+    html += `<div class="ts-label">Choose one:</div>`;
+    html += `<div class="options">`;
+    s.testOptions.forEach((opt, i)=>{
+      let cls = "opt-btn";
+      if(testAns){
+        cls += " opt-disabled";
+        if(i === s.testCorrect) cls += " opt-correct";
+        else if(i === testAns.chosenIdx && !testAns.correct) cls += " opt-wrong";
+      }
+      html += `<button class="${cls}" data-test-idx="${i}">${opt}</button>`;
+    });
+    html += `</div></div>`;
+
+    if(testAns){
+      let wrongWhyHtml = "";
+      if(!testAns.correct && s.testWrongWhy && s.testWrongWhy[testAns.chosenIdx]){
+        wrongWhyHtml = `<div class="why-not-box"><strong>Why not "${s.testOptions[testAns.chosenIdx]}"?</strong>${s.testWrongWhy[testAns.chosenIdx]}</div>`;
+      }
+      const fbHtml = testAns.correct
+        ? `<div class="feedback-correct" style="margin-top:14px">
+             <div><span class="feedback-icon">✓</span><span class="feedback-title">Correct!</span></div>
+             <div><strong>${s.testOptions[s.testCorrect]}</strong> is the right choice. ${s.finalNote}</div>
+           </div>`
+        : `<div class="feedback-incorrect" style="margin-top:14px">
+             <div><span class="feedback-icon">✗</span><span class="feedback-title">Not quite</span></div>
+             <div>The correct test is <strong>${s.testOptions[s.testCorrect]}</strong>. ${s.finalNote}</div>
+             ${wrongWhyHtml}
+           </div>`;
+      html += fbHtml;
+    }
+
+    html += `<div class="btn-row">`;
+    html += `<button class="btn btn-secondary" id="prev-step">← Previous step</button>`;
+    if(testAns){
+      html += `<button class="btn btn-primary" id="see-conclusion">See full walkthrough →</button>`;
+    }
+    html += `</div>`;
+
+  // ── PHASE 3: Conclusion / walkthrough ───────────────────────────
+  } else {
+    const correctCount = scoreFor(s, si);
+    const maxCount = maxScoreFor(s);
+    html += `<div class="result">
+               <h2>✓ ${s.finalTest}</h2>
+               <div class="sub">You got <strong>${correctCount} / ${maxCount}</strong> correct on this scenario
+               (${N} decision step${N===1?'':'s'} + 1 test selection).</div>
+             </div>`;
+
+    html += `<div class="walkthrough"><h4>🌳 Your path through the decision tree</h4>`;
+    s.steps.forEach((step, i)=>{
+      const ans = log[i];
+      const youChose = ans ? step.options[ans.chosenIdx] : "(skipped)";
+      const right = step.options[step.correct];
+      const ok = ans && ans.correct;
+      html += `<div class="walk-step" style="border-left-color:${ok?'var(--success)':'#B8252F'}">
+                 <div class="q-text">${i+1}. ${step.q.replace(/^Step\s*\d*\s*[—–-]?\s*/i, '')}</div>
+                 <div class="a-text">
+                   You chose: <em>${youChose}</em>${ok?' ✓':' — correct answer was <strong>'+right+'</strong>'}.<br>
+                   <span style="color:var(--muted)">${step.why}</span>
+                 </div>
+               </div>`;
+    });
+
+    const testAnsW = testAnswerLog[si];
+    const testChose = testAnsW ? s.testOptions[testAnsW.chosenIdx] : "(skipped)";
+    const testOk = testAnsW && testAnsW.correct;
+    html += `<div class="walk-step" style="border-left-color:${testOk?'var(--success)':'#B8252F'}">
+               <div class="q-text">${N+1}. Which statistical test should you apply?</div>
+               <div class="a-text">
+                 You chose: <em>${testChose}</em>${testOk
+                   ? ' ✓'
+                   : ' — correct answer was <strong>'+s.testOptions[s.testCorrect]+'</strong>'}.
+               </div>
+             </div>`;
+
+    html += `<div class="walk-step" style="border-left-color:var(--success);background:#E8F5EA">
+               <div class="q-text">→ Conclusion</div>
+               <div class="a-text">Apply <strong>${s.finalTest}</strong>. ${s.finalNote}</div>
+             </div></div>`;
+
+    html += `<div class="btn-row">`;
+    html += `<button class="btn btn-secondary" id="restart-scenario">↺ Retry this scenario</button>`;
+    if(displayPos > 0){
+      html += `<button class="btn btn-secondary" id="prev-scenario">← Previous scenario</button>`;
+    }
+    if(displayPos < displayOrder.length - 1){
+      html += `<button class="btn btn-primary" id="next-scenario">Next scenario →</button>`;
+    } else {
+      html += `<button class="btn btn-primary" id="reset-all">↺ Start over from scenario 1</button>`;
+    }
+    html += `</div>`;
+  }
+
+  c.innerHTML = html;
+  wirePracticeHandlers();
+}
+
+function wirePracticeHandlers(){
+  const si = currentScenarioIdx();
+  const s = SCENARIOS[si];
+  const log = answerLog[si];
+  const N = totalDecisionSteps(s);
+  const stepIdx = stepStates[si];
+
+  document.querySelectorAll("#practice-container .opt-btn[data-idx]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      if(stepStates[si] >= N) return;
+      const step = s.steps[stepStates[si]];
+      if(log[stepStates[si]]) return;
+      const idx = parseInt(btn.dataset.idx);
+      const correct = idx === step.correct;
+      log[stepStates[si]] = {chosenIdx: idx, correct};
+      renderPractice();
+    });
+  });
+
+  document.querySelectorAll("#practice-container .opt-btn[data-test-idx]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      if(testAnswerLog[si]) return;
+      const idx = parseInt(btn.dataset.testIdx);
+      const correct = idx === s.testCorrect;
+      testAnswerLog[si] = {chosenIdx: idx, correct};
+      renderPractice();
+    });
+  });
+
+  const wire = (id, fn) => { const el=document.getElementById(id); if(el) el.addEventListener("click", fn); };
+
+  wire("prev-step", ()=>{
+    stepStates[si] = Math.max(0, stepStates[si]-1);
+    renderPractice();
+  });
+  wire("next-step", ()=>{
+    stepStates[si] = Math.min(N, stepStates[si]+1);
+    renderPractice();
+  });
+  wire("select-test", ()=>{ stepStates[si]=N; renderPractice(); });
+  wire("see-conclusion", ()=>{ stepStates[si]=N+1; renderPractice(); });
+  wire("prev-scenario", ()=>{
+    displayPos = Math.max(0, displayPos-1);
+    renderPractice();
+  });
+  wire("next-scenario", ()=>{
+    displayPos = Math.min(displayOrder.length-1, displayPos+1);
+    renderPractice();
+  });
+  wire("restart-scenario", ()=>{
+    answerLog[si] = [];
+    testAnswerLog[si] = null;
+    stepStates[si] = 0;
+    renderPractice();
+  });
+  wire("reset-all", ()=>{
+    displayPos = 0;
+    answerLog = SCENARIOS.map(()=>[]);
+    testAnswerLog = SCENARIOS.map(()=>null);
+    stepStates = SCENARIOS.map(()=>0);
+    renderPractice();
+  });
+}
+
+// ── Filter & Shuffle wiring ────────────────────────────────────────
+document.querySelectorAll(".filter-btn").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    activeFilter = btn.dataset.filter;
+    document.querySelectorAll(".filter-btn").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    buildDisplayOrder();
+    displayPos = 0;
+    renderPractice();
+  });
+});
+
+document.getElementById("shuffle-btn").addEventListener("click", ()=>{
+  shuffled = !shuffled;
+  document.getElementById("shuffle-btn").classList.toggle("active", shuffled);
+  buildDisplayOrder();
+  displayPos = 0;
+  renderPractice();
+});
+
+// ── Initial render ─────────────────────────────────────────────────
+renderPractice();
+</script>
+</body>
+</html>

@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Statistical Test Selector | PHR 952 Biostatistics</title>
+<style>
+  :root{
+    --primary:#003366;--accent:#0072CE;--light:#E6F0FA;--success:#1B7F37;
+    --warn:#B8860B;--bg:#F5F8FB;--card:#FFFFFF;--text:#1B2733;
+    --muted:#5A6B7B;--border:#D6DEE6;
+  }
+  *{box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    margin:0;padding:0;background:var(--bg);color:var(--text);line-height:1.5;}
+  header{background:linear-gradient(135deg,var(--primary),var(--accent));color:white;padding:24px 32px;}
+  header h1{margin:0;font-size:1.6em}
+  header p{margin:6px 0 0;opacity:.9;font-size:.95em}
+  .container{max-width:1100px;margin:0 auto;padding:24px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:10px;
+    padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.04);}
+  .step-label{display:inline-block;background:var(--accent);color:white;
+    padding:3px 10px;border-radius:12px;font-size:.8em;font-weight:600;
+    margin-bottom:8px;letter-spacing:.3px;}
+  .step-label.step-final{background:var(--primary)}
+  h2{color:var(--primary);margin:0 0 8px;font-size:1.2em}
+  h3{color:var(--primary);margin:16px 0 6px;font-size:1.05em}
+  .question{font-size:1.05em;font-weight:600;margin:10px 0 14px}
+  .options{display:flex;flex-direction:column;gap:8px}
+  .opt-btn{text-align:left;background:white;border:2px solid var(--border);
+    border-radius:8px;padding:12px 14px;cursor:pointer;font-size:.95em;
+    transition:all .15s;color:var(--text);}
+  .opt-btn:hover{border-color:var(--accent);background:var(--light)}
+  .opt-btn .hint{display:block;color:var(--muted);font-weight:400;font-size:.85em;margin-top:3px}
+  .opt-btn.opt-correct{border-color:var(--success);background:#E8F5EA}
+  .opt-btn.opt-wrong{border-color:#B8252F;background:#FDE2E4}
+  .opt-btn.opt-disabled{cursor:default;pointer-events:none}
+  .breadcrumbs{background:var(--light);padding:12px 16px;border-radius:8px;
+    margin-bottom:16px;font-size:.9em;border-left:4px solid var(--accent);}
+  .breadcrumbs .crumb{color:var(--primary);font-weight:600}
+  .result{background:linear-gradient(135deg,#1B7F37,#2BA84A);color:white;
+    padding:20px;border-radius:10px;margin-bottom:16px;}
+  .result h2{color:white;font-size:1.5em;margin:0 0 6px}
+  .result .sub{opacity:.95;font-size:.95em}
+  .feedback-correct{background:linear-gradient(135deg,#1B7F37,#2BA84A);
+    color:white;padding:18px 22px;border-radius:10px;margin:0 0 16px;}
+  .feedback-incorrect{background:linear-gradient(135deg,#B8252F,#D63340);
+    color:white;padding:18px 22px;border-radius:10px;margin:0 0 16px;}
+  .feedback-icon{font-size:1.3em;margin-right:8px}
+  .feedback-title{font-weight:700;font-size:1.15em;margin-bottom:6px}
+  .example-box{background:#FFF8E1;border-left:4px solid var(--warn);
+    padding:14px 16px;border-radius:6px;margin:14px 0;}
+  .example-box .ex-title{font-weight:700;color:#7A5C00;margin-bottom:6px}
+  .steps-list{padding-left:20px;margin:8px 0}
+  .steps-list li{margin:5px 0}
+  .btn-row{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+  .btn{padding:10px 18px;border-radius:6px;border:none;cursor:pointer;
+    font-weight:600;font-size:.95em;transition:all .15s;}
+  .btn-primary{background:var(--accent);color:white}
+  .btn-primary:hover{background:var(--primary)}
+  .btn-secondary{background:white;color:var(--accent);border:2px solid var(--accent)}
+  .btn-secondary:hover{background:var(--light)}
+  .analogy{background:#EEF7EE;border-left:4px solid var(--success);
+    padding:12px 16px;border-radius:6px;margin:12px 0;font-size:.95em;}
+  .analogy .a-title{font-weight:700;color:var(--success);margin-bottom:4px}
+  .footer-note{margin-top:30px;padding:14px;background:#F0F4F8;border-radius:8px;
+    font-size:.85em;color:var(--muted);text-align:center;}
+  table.assumptions{width:100%;border-collapse:collapse;margin:10px 0;font-size:.92em;}
+  table.assumptions th,table.assumptions td{border:1px solid var(--border);padding:8px 10px;text-align:left;}
+  table.assumptions th{background:var(--light);color:var(--primary)}
+  .tag{display:inline-block;padding:2px 8px;border-radius:10px;font-size:.75em;font-weight:600;margin-right:4px;}
+  .tag-parametric{background:#D6EBFA;color:#003366}
+  .tag-nonparametric{background:#FCE4D6;color:#7A2C00}
+  .tag-categorical{background:#E6DAF2;color:#3D1F66}
+  .tag-survival{background:#D4EDDA;color:#155724}
+  .ref-list{font-size:.85em;color:var(--muted);margin-top:10px}
+  .progress{display:flex;gap:4px;margin-bottom:16px;transition:all .2s;}
+  .pdot{flex:0 0 auto;width:32px;height:6px;background:var(--border);border-radius:3px;transition:background .2s;}
+  .pdot.active{background:var(--accent)}
+  .pdot.done{background:var(--success)}
+  .pdot.final{background:var(--primary);opacity:.35}
+  .pdot.final.active{opacity:1}
+  .pdot.final.done{background:var(--success);opacity:1}
+  .test-select-box{background:#EEF4FB;border:2px solid var(--accent);border-radius:10px;
+    padding:16px 18px;margin:10px 0 6px;}
+  .test-select-box .ts-label{font-size:.78em;font-weight:700;letter-spacing:.4px;
+    color:var(--accent);text-transform:uppercase;margin-bottom:10px;}
+  .table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:10px 0}
+  .note-box{background:#FFF3CD;border-left:4px solid #FFC107;padding:10px 14px;
+    border-radius:6px;margin:10px 0;font-size:.88em;color:#664D03;}
+  @media(max-width:600px){
+    header{padding:16px 18px}
+    header h1{font-size:1.25em}
+    header p{font-size:.85em}
+    .container{padding:12px}
+    .card{padding:14px}
+    .question{font-size:1em}
+    .opt-btn{font-size:.9em;padding:10px 12px}
+    .btn{padding:10px 14px;font-size:.9em;width:100%}
+    .btn-row{flex-direction:column}
+    .feedback-correct,.feedback-incorrect{padding:14px 16px}
+    .feedback-title{font-size:1.05em}
+    .result{padding:14px}
+    .result h2{font-size:1.25em}
+    table.assumptions{font-size:.78em}
+    table.assumptions th,table.assumptions td{padding:6px 8px}
+    .ref-list{font-size:.8em}
+    .footer-note{font-size:.78em}
+  }
+  .attribution{margin-top:24px;padding:18px 20px;background:#FFFFFF;
+    border:1px solid var(--border);border-left:4px solid var(--accent);
+    border-radius:8px;font-size:.85em;color:var(--muted);line-height:1.55;}
+  .attribution .attrib-title{font-weight:700;color:var(--primary);
+    font-size:1.05em;margin-bottom:8px;}
+  .attribution .cite{background:#F7FAFC;border:1px solid var(--border);
+    border-radius:6px;padding:10px 12px;margin:10px 0;font-size:.95em;color:#37474F;}
+  .attribution a{color:var(--accent);text-decoration:none;}
+  .attribution a:hover{text-decoration:underline;}
+  .attribution .lic-row{display:flex;align-items:center;gap:10px;
+    flex-wrap:wrap;margin-top:10px;}
+  .cc-badge{display:inline-flex;align-items:center;gap:5px;
+    background:var(--primary);color:#fff;padding:4px 10px;border-radius:4px;
+    font-weight:700;font-size:.9em;letter-spacing:.5px;}
+  .attribution .ai-note{margin-top:10px;padding-top:10px;
+    border-top:1px solid var(--border);font-size:.95em;}
+</style>
+</head>
+<body>
+<header>
+  <h1>Statistical Test Selector</h1>
+  <p>PHR 952 Biostatistics &middot; Interactive decision tool based on Garrett (2012) flowchart with worked clinical examples</p>
+</header>
+<div class="container">
+  <div id="breadcrumbs" class="breadcrumbs" style="display:none"></div>
+  <div id="progress" class="progress"></div>
+  <div id="step-container" class="card"></div>
+  <div id="examples-container"></div>
+  <div class="footer-note">
+    Source: Garrett JG / UNC, 2012. Decision flowchart adapted from PHR 952 Biostatistics slides (slides 35, 84, 122). Worked examples adapted from the same deck.
+  </div>
+  <div class="attribution">
+    <div class="attrib-title">About this resource</div>
+    <div><strong>Statistical Test Selector</strong> &mdash; an interactive teaching tool for PHR 952 Biostatistics.</div>
+
+    <div class="cite">
+      <strong>Cite as:</strong><br>
+      Moga D. <em>Statistical Test Selector</em>. PHR 952 Biostatistics.
+      University of Kentucky College of Pharmacy; 2026.
+      Available at: <a href="https://epidmoga.github.io/phr952-biostats/decision_tool.html">https://epidmoga.github.io/phr952-biostats/decision_tool.html</a>
+    </div>
+
+    <div class="lic-row">
+      <span class="cc-badge">CC BY 4.0</span>
+      <span>&copy; 2026 Daniela Moga. Licensed under a
+        <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">Creative&nbsp;Commons Attribution 4.0 International License</a>.
+        You may share and adapt this material for any purpose, including commercially,
+        provided you give appropriate credit to the author.</span>
+    </div>
+
+    <div class="ai-note">
+      <strong>Development note:</strong> This tool was developed by the author with AI assistance
+      (Claude, Anthropic). All instructional design, clinical examples, statistical content,
+      and pedagogical decisions are the author's own.
+      Questions or feedback: <a href="mailto:daniela.moga@uky.edu">daniela.moga@uky.edu</a>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Shared test-option pools ───────────────────────────────────────
+const TEST_OPTS_UNI = [
+  "Mean ± SD with 95% CI",
+  "Median + IQR",
+  "Proportion (n/N, %) with 95% CI",
+  "Frequency table (n and % per category)",
+  "One-sample t-test",
+  "One-sample Wilcoxon Signed-Rank (or Sign Test)",
+  "One-sample Binomial / One-proportion z-test",
+  "Chi-square Goodness-of-Fit"
+];
+const TEST_OPTS_BI = [
+  "Two-sample (independent) t-test",           // 0
+  "Paired t-test",                              // 1
+  "One-way ANOVA",                              // 2
+  "Wilcoxon Rank-Sum (Mann–Whitney U)",         // 3
+  "Wilcoxon Signed-Rank Test",                 // 4
+  "Kruskal–Wallis Test",                        // 5
+  "Pearson's Correlation / Simple Linear Regression", // 6
+  "Spearman's Rank Correlation",               // 7
+  "Pearson's Chi-Square (χ²)",                 // 8
+  "Fisher's Exact Test",                       // 9
+  "Chi-Square R×C or Test for Trend",          // 10
+  "Logistic Regression (continuous X, categorical Y)", // 11
+  "Log-rank Test (Kaplan–Meier comparison)",   // 12
+  "McNemar's Test"                             // 13
+];
+const TEST_OPTS_MULTI = [
+  "Multiple Linear Regression (continuous Y)",
+  "Logistic Regression (binary Y → Odds Ratio)",
+  "Poisson Regression (count/rate Y → Rate Ratio)",
+  "Cox Proportional Hazards Regression (time-to-event Y → Hazard Ratio)"
+];
+
+const NODES = {
+  start:{type:"question",label:"Start",
+    q:"How many variables are you analyzing in this question?",
+    hint:"Think of it as: how many columns from your dataset go into this single comparison?",
+    options:[
+      {text:"One variable",hint:"e.g., age, weight, A1c, blood type, mortality status — one characteristic described or tested at a time",next:"oneVar_type"},
+      {text:"Two variables — one outcome (Y) and one exposure (X)",hint:"outcome (e.g., blood pressure, mortality) + exposure (e.g., drug group, sex, age group)",next:"twoVar_Y"},
+      {text:"Three or more variables — outcome + exposure + confounders",hint:"outcome (e.g., blood pressure) + exposure (e.g., drug group) + confounders (e.g., age, sex, BMI, comorbidity score)",next:"multivar"}
+    ]},
+
+  // ── UNIVARIABLE ───────────────────────────────────────────────────
+  oneVar_type:{type:"question",label:"Step 2",
+    q:"What type is your single variable?",
+    hint:"Continuous = numeric and measurable (mg, mmHg, years). Categorical = falls into categories (yes/no, blood type, pain stage).",
+    options:[
+      {text:"Continuous (ratio or interval)",hint:"e.g., weight in kg, systolic BP in mmHg, A1c %",next:"oneVar_cont_norm"},
+      {text:"Categorical (binary, nominal, or ordinal)",hint:"e.g., mortality (yes/no), blood type (A/B/AB/O), pain stage (mild/mod/severe)",next:"oneVar_cat_type"}
+    ]},
+  oneVar_cont_norm:{type:"question",label:"Step 3",
+    q:"Is the variable approximately normally distributed?",
+    hint:"Visual: histogram + Q–Q plot. Statistical: Shapiro–Wilk (preferred, especially for n < 50) or Kolmogorov–Smirnov. H₀ = data are normal; if p > 0.05, fail to reject → treat as normal.",
+    options:[
+      {text:"Yes — approximately normal (Shapiro–Wilk p > 0.05)",next:"oneVar_cont_norm_purpose"},
+      {text:"No — skewed, small sample, or Shapiro–Wilk p < 0.05",next:"oneVar_cont_nonnorm_purpose"}
+    ]},
+  oneVar_cont_norm_purpose:{type:"question",label:"Step 4",
+    q:"What do you want to do with this single continuous, normal variable?",
+    options:[
+      {text:"Just describe it",next:"res_uni_cont_norm_desc"},
+      {text:"Test whether the mean differs from a known reference value",hint:"e.g., is mean A1c in our clinic different from the ADA target of 7.0%?",next:"res_one_sample_t"}
+    ]},
+  oneVar_cont_nonnorm_purpose:{type:"question",label:"Step 4",
+    q:"What do you want to do with this single continuous, non-normal variable?",
+    options:[
+      {text:"Just describe it",next:"res_uni_cont_nonnorm_desc"},
+      {text:"Test whether the median differs from a known reference value",hint:"Non-parametric one-sample test",next:"res_one_sample_wilcoxon"}
+    ]},
+  oneVar_cat_type:{type:"question",label:"Step 3",
+    q:"How many categories does the variable have?",
+    options:[
+      {text:"Binary — exactly 2 (e.g., dead/alive, pass/fail)",next:"oneVar_cat_bin_purpose"},
+      {text:"Nominal or ordinal — more than 2 (e.g., blood type, cancer stage)",next:"oneVar_cat_multi_purpose"}
+    ]},
+  oneVar_cat_bin_purpose:{type:"question",label:"Step 4",
+    q:"What do you want to do with this binary variable?",
+    options:[
+      {text:"Just describe the proportion",next:"res_uni_binary_desc"},
+      {text:"Test whether the proportion differs from a known value",hint:"e.g., is the observed adherence rate of 0.72 different from the expected 0.80?",next:"res_one_sample_binomial"}
+    ]},
+  oneVar_cat_multi_purpose:{type:"question",label:"Step 4",
+    q:"What do you want to do with this multi-category variable?",
+    options:[
+      {text:"Just describe the frequencies",next:"res_uni_cat_multi_desc"},
+      {text:"Test whether the observed distribution matches an expected one",hint:"e.g., are blood-type frequencies in our sample consistent with the general US distribution?",next:"res_chi_gof"}
+    ]},
+
+  // Univariable results
+  res_uni_cont_norm_desc:{type:"result",test:"Descriptive statistics (continuous, normal)",tag:"Univariable",
+    testOptions:TEST_OPTS_UNI,testCorrect:0,
+    summary:"Describe the variable with measures of central tendency and spread that assume normality.",
+    steps:["Report mean ± standard deviation (SD).","Report n and the 95% CI for the mean: mean ± 1.96 × (SD/√n).","Show a histogram with the normal curve overlaid; confirm visually.","To formally test normality: Shapiro–Wilk (preferred for n < 50) or Kolmogorov–Smirnov. H₀: data are normal; p > 0.05 → consistent with normal."],
+    example:{title:"Example — Age in a hypertension clinic",body:"n = 500 patients. Mean age = 64.2 years, SD = 8.1. 95% CI for the mean: 64.2 ± 1.96 × (8.1/√500) = 63.5 to 64.9 years. Shapiro–Wilk p = 0.21 (consistent with normal)."},
+    analogy:"Like giving the height of an 'average' player and saying 'plus or minus a typical wobble' — works because heights cluster symmetrically."},
+
+  res_uni_cont_nonnorm_desc:{type:"result",test:"Descriptive statistics (continuous, non-normal)",tag:"Univariable",
+    testOptions:TEST_OPTS_UNI,testCorrect:1,
+    summary:"When the variable is skewed, the mean is pulled by outliers — use the median and IQR instead.",
+    steps:["Report median (50th percentile) and interquartile range (IQR = Q3 − Q1).","Report n, minimum and maximum.","Show a histogram or boxplot to make the skew visible to your reader.","To formally check normality: Shapiro–Wilk (p < 0.05 → reject normality)."],
+    example:{title:"Example — Length of stay (LOS) in an ICU",body:"n = 200. LOS is right-skewed (a few patients stay 30+ days). Median LOS = 4 days, IQR 2–9 days, range 1–47 days. Reporting 'mean = 6.8 days' would be misleading because of the long tail."},
+    analogy:"Like the pharmacist-salary example from class: when one supervisor earns far more than the others, the median tells the truth, the mean tells the boss's story."},
+
+  res_one_sample_t:{type:"result",test:"One-sample t-test",tag:"Parametric",
+    testOptions:TEST_OPTS_UNI,testCorrect:4,
+    summary:"Tests whether the mean of a single continuous, normally distributed variable differs from a known reference value μ₀.",
+    steps:["State H₀: mean = μ₀ (the reference). H₁: mean ≠ μ₀ (two-sided).","Compute t = (sample mean − μ₀) / (SD/√n), with n−1 degrees of freedom.","Compare to the t-distribution; reject H₀ if p < α (typically 0.05).","Report the sample mean with its 95% CI and the p-value."],
+    example:{title:"Example — Clinic A1c vs ADA target",body:"ADA target HbA1c = 7.0%. In your clinic, n = 60 patients, mean A1c = 7.6%, SD = 0.9%. H₀: μ = 7.0. t = (7.6 − 7.0) / (0.9/√60) = 5.16, df = 59, p < 0.0001. Conclusion: reject H₀ — mean A1c in your clinic is significantly higher than the ADA target."},
+    analogy:"Like checking whether your kitchen oven's set temperature matches the dial: you measure many times and ask 'is the true setting really 350°F?'"},
+
+  res_one_sample_wilcoxon:{type:"result",test:"One-sample Wilcoxon Signed-Rank Test (or Sign Test)",tag:"Non-parametric",
+    testOptions:TEST_OPTS_UNI,testCorrect:5,
+    summary:"Tests whether the median of a single continuous variable differs from a known reference value, when the data are non-normal.",
+    steps:["Compute d = each observation − reference value μ₀.","Rank |d| (drop zeros), then attach the sign back.","Sum positive ranks (W+) and negative ranks (W−).","H₀: median = μ₀. H₁: median ≠ μ₀.","Software returns an exact or approximate p-value."],
+    example:{title:"Example — Skewed time-to-pain-relief vs label claim",body:"Drug label claims median onset of analgesia = 30 minutes. In 25 patients, times are right-skewed (a few wait 90+ min). Observed median = 38 min. One-sample Wilcoxon signed-rank gives p = 0.018. Conclusion: median onset is significantly longer than the label claim."},
+    analogy:"Same idea as the one-sample t-test but using rank ordering — it doesn't trust extreme values, only their position."},
+
+  res_uni_binary_desc:{type:"result",test:"Descriptive statistics (binary variable)",tag:"Univariable",
+    testOptions:TEST_OPTS_UNI,testCorrect:2,
+    summary:"Describe a binary variable with a count and proportion (+ confidence interval).",
+    steps:["Report n (numerator) / N (denominator) and proportion p = n/N.","Compute 95% CI for the proportion (Wilson or Clopper–Pearson for small samples; normal approximation for large).","If reporting in a paper: state both the absolute number and the percentage."],
+    example:{title:"Example — 30-day mortality",body:"Out of 350 patients, 28 died within 30 days. Proportion = 28/350 = 0.080 (8.0%). 95% CI (Wilson) ≈ 5.5% to 11.4%."},
+    analogy:"Just a tally — how many in the 'yes' bucket out of the total, with a margin of error so readers know how precise that estimate is."},
+
+  res_one_sample_binomial:{type:"result",test:"One-sample Binomial Test (or one-proportion z-test)",tag:"Categorical",
+    testOptions:TEST_OPTS_UNI,testCorrect:6,
+    summary:"Tests whether an observed proportion differs from a hypothesized proportion p₀.",
+    steps:["State H₀: p = p₀. H₁: p ≠ p₀.","Compute z = (p̂ − p₀) / √(p₀(1−p₀)/n) when np₀ and n(1−p₀) are both ≥ 5.","For small samples, use the exact binomial test (no normal approximation).","Compare to the standard normal (z) or exact binomial distribution; report p-value."],
+    example:{title:"Example — Adherence vs expected target",body:"Pharmacy program expects 80% adherence (p₀ = 0.80). In 100 audited patients, only 72 are adherent (p̂ = 0.72). z = (0.72 − 0.80) / √(0.80 × 0.20 / 100) = −2.0, p = 0.046. Conclusion: reject H₀ — observed adherence is significantly below the 80% target."},
+    analogy:"Like flipping a coin 100 times and asking 'is this really a fair coin?' — except the 'coin' is your patient population and 'heads' is adherence."},
+
+  res_uni_cat_multi_desc:{type:"result",test:"Descriptive statistics (multi-category variable)",tag:"Univariable",
+    testOptions:TEST_OPTS_UNI,testCorrect:3,
+    summary:"Describe a nominal or ordinal variable by listing each category with its frequency and percentage.",
+    steps:["Build a frequency table: each category with n and %.","Visualize with a bar chart (nominal) or an ordered bar chart (ordinal).","If ordinal, also consider reporting median category or rank summary."],
+    example:{title:"Example — Blood-type distribution in a transfusion cohort",body:"n = 400 patients. A: 168 (42%), O: 180 (45%), B: 40 (10%), AB: 12 (3%)."},
+    analogy:"Like sorting a bag of mixed candy by flavor and saying how many of each you got."},
+
+  res_chi_gof:{type:"result",test:"Chi-square Goodness-of-Fit Test",tag:"Categorical",
+    testOptions:TEST_OPTS_UNI,testCorrect:7,
+    summary:"Tests whether the observed frequencies across categories of ONE variable match a hypothesized (expected) distribution.",
+    steps:["List the observed count Oᵢ in each of k categories.","Compute the expected count Eᵢ for each category from the hypothesized distribution: Eᵢ = n × pᵢ.","Check that every Eᵢ ≥ 5 (otherwise use an exact / multinomial test).","Compute χ² = Σ (Oᵢ − Eᵢ)² / Eᵢ across all k categories.","df = k − 1. Reject H₀ if χ² exceeds the critical value (p < α)."],
+    example:{title:"Example — Blood-type frequencies vs US distribution",body:"US distribution (approx.): A 42%, O 45%, B 10%, AB 3%. Your sample (n = 400) observed: A 150, O 200, B 40, AB 10. Expected: A 168, O 180, B 40, AB 12. χ² = (150−168)²/168 + (200−180)²/180 + (40−40)²/40 + (10−12)²/12 = 1.93 + 2.22 + 0 + 0.33 = 4.48. df = 3. p ≈ 0.21. Conclusion: fail to reject H₀ — your sample is consistent with the US distribution."},
+    analogy:"Like checking whether a bag of M&Ms really has the colour mix the company claims on the website."},
+
+  // ── MULTIVARIABLE ─────────────────────────────────────────────────
+  multivar:{type:"question",label:"Step 2",
+    q:"What type is the OUTCOME variable (Y)?",
+    hint:"The outcome is what you're predicting or explaining. Its type determines which regression model to use.",
+    options:[
+      {text:"Continuous (e.g., blood pressure, A1c, length of stay, cortisol level)",hint:"Y takes any numeric value along a range",next:"res_multi_linear"},
+      {text:"Binary (e.g., dead/alive, readmitted yes/no, adherent yes/no, disease present/absent)",hint:"Y has exactly 2 categories — event occurred or not",next:"res_multi_logistic"},
+      {text:"Count or rate (e.g., number of ED visits, hospitalizations per person-year, adverse events)",hint:"Y is a non-negative integer count, or events per unit of person-time",next:"res_multi_poisson"},
+      {text:"Time-to-event (e.g., days to death, relapse, discharge; some subjects not yet reached the event)",hint:"Y = how long until the event; subjects who leave the study before the event are censored",next:"res_multi_cox"}
+    ]},
+
+  res_multi_linear:{type:"result",test:"Multiple Linear Regression",tag:"Multivariable",
+    testOptions:TEST_OPTS_MULTI,testCorrect:0,
+    summary:"Estimates the mean change in a continuous outcome Y for each 1-unit increase in a predictor, while holding all other variables constant.",
+    steps:["Write the model: Y = β₀ + β₁X₁ + β₂X₂ + … + βₖXₖ + ε, where X₁ is the main exposure and X₂…Xₖ are confounders.","Interpret each β: the mean change in Y per 1-unit increase in that predictor, adjusting for all others.","Report β with 95% CI and p-value for the main exposure (and key confounders).","Report overall model R² (proportion of variance in Y explained by the model).","Check assumptions: normality of residuals, constant variance (homoscedasticity), no severe multicollinearity (VIF < 10). Rule of thumb: ≥ 10–15 events per predictor variable."],
+    example:{title:"Example — Preterm birth and salivary cortisol",body:"Y = salivary cortisol response (continuous). X₁ = preterm birth (yes/no). Confounders: birth-weight z-score, maternal hypertension. Multiple linear regression gives β for preterm birth = 1.4 nmol/L (95% CI 0.3–2.5, p = 0.014), adjusted for the confounders."},
+    analogy:"Like a recipe with several ingredients — you hold all other ingredients constant and ask: 'what does this one add to the flavor?'"},
+
+  res_multi_logistic:{type:"result",test:"Multivariable Logistic Regression",tag:"Multivariable",
+    testOptions:TEST_OPTS_MULTI,testCorrect:1,
+    summary:"Models the probability of a binary outcome Y. Estimates adjusted Odds Ratios (ORs) for each predictor, controlling for confounders.",
+    steps:["Write the model: logit(P(Y=1)) = β₀ + β₁X₁ + … + βₖXₖ.","Interpret exp(β₁): the adjusted Odds Ratio for a 1-unit increase in the main exposure X₁, holding confounders constant.","Report OR with 95% CI and p-value for each key predictor.","Assess model fit: AUC / c-statistic (discrimination) and calibration plot. Note: Hosmer–Lemeshow test is still widely reported but has known limitations (sensitive to sample size and choice of bins) — calibration plots give a more complete picture.","Check for complete separation and influential observations."],
+    example:{title:"Example — 30-day readmission, adjusting for age and comorbidities",body:"Y = readmitted within 30 days (yes/no). X₁ = drug regimen (A vs B). Confounders: age, sex, Charlson comorbidity index. Logistic regression gives adjusted OR for drug B vs A = 0.62 (95% CI 0.41–0.93, p = 0.02). Patients on drug B have 38% lower odds of readmission, after adjusting for age, sex, and comorbidity. Note: OR ≈ RR only when the outcome is rare (roughly < 10%); with common outcomes the OR will overestimate the RR."},
+    analogy:"Like a logit bridge — it bends a linear score into a probability between 0 and 1, even when multiple predictors are in the model."},
+
+  res_multi_poisson:{type:"result",test:"Multivariable Poisson Regression",tag:"Multivariable",
+    testOptions:TEST_OPTS_MULTI,testCorrect:2,
+    summary:"Models count or rate outcomes. Estimates adjusted Rate Ratios (RRs). If variance >> mean (overdispersion), use negative binomial regression instead.",
+    steps:["Write the model: log(E[Y]) = β₀ + β₁X₁ + … + βₖXₖ.","If modeling a rate (events per person-time), add an offset: log(person-time) on the right-hand side.","Interpret exp(β₁): the adjusted Rate Ratio for a 1-unit increase in the main exposure X₁.","Test for overdispersion (variance > mean): if present, switch to negative binomial regression.","Report RR with 95% CI and p-value for each key predictor."],
+    example:{title:"Example — Annual ED visits, adjusting for insurance and comorbidity",body:"Y = number of ED visits in the past year. X₁ = insurance status (insured vs uninsured). Confounders: age, sex, Charlson score. Poisson regression gives adjusted RR for uninsured vs insured = 1.84 (95% CI 1.45–2.34, p < 0.001). Uninsured patients have 84% higher rate of ED visits per year, adjusting for confounders."},
+    analogy:"Like a counter that speeds up or slows down based on multiple dials — Poisson regression tells you by how much each dial shifts the count, holding the others fixed."},
+
+  res_multi_cox:{type:"result",test:"Cox Proportional Hazards Regression",tag:"Multivariable",
+    testOptions:TEST_OPTS_MULTI,testCorrect:3,
+    summary:"Models time until an event occurs (survival analysis). Estimates adjusted Hazard Ratios (HRs), accommodating censored subjects — those who leave the study before experiencing the event.",
+    steps:["Define the time-to-event variable (e.g., days from enrollment to death) and the censoring indicator (1 = event occurred, 0 = censored).","Write the model: h(t) = h₀(t) × exp(β₁X₁ + … + βₖXₖ). The baseline hazard h₀(t) is left unspecified (semi-parametric).","Interpret exp(β₁): the Hazard Ratio — relative instantaneous risk of the event per 1-unit increase in X₁, adjusted for confounders. HR > 1 = higher risk; HR < 1 = lower risk (protective).","Check the proportional hazards assumption: log–log survival plots (complementary log-log), Schoenfeld residual tests. If violated, consider stratified Cox or time-varying coefficients.","Report HR with 95% CI and p-value for the main exposure."],
+    example:{title:"Example — Time to hospital readmission, adjusting for drug group and age",body:"Y = days to first readmission (some patients censored at 90 days). X₁ = drug group (A vs B). Confounders: age, sex, comorbidity score. Cox regression gives adjusted HR for drug A vs B = 1.52 (95% CI 1.08–2.13, p = 0.016). Patients on drug A have 52% higher instantaneous rate of readmission than those on drug B, after adjustment."},
+    analogy:"Like a race where some runners drop out before finishing — Cox regression compares how fast each group reaches the finish line, adjusting for other variables, and handles those who never cross it."},
+
+  // ── BIVARIABLE — Y type ───────────────────────────────────────────
+  twoVar_Y:{type:"question",label:"Step 2",
+    q:"What type of variable is the OUTCOME (dependent variable, Y)?",
+    hint:"Y is what you measure as the result. Consider whether it is a number, a category, or a time until an event.",
+    options:[
+      {text:"Continuous (e.g., blood pressure mmHg, A1c %)",next:"twoVar_X_contY"},
+      {text:"Categorical / discrete (e.g., dead vs alive, drug response yes/no)",next:"twoVar_X_catY"},
+      {text:"Time-to-event (e.g., days to death, relapse, or readmission; some subjects may not have had the event yet)",hint:"The outcome is how long until something happens, and some subjects leave the study before the event — they are censored.",next:"twoVar_survival"}
+    ]},
+
+  // ── BIVARIABLE — Survival path ────────────────────────────────────
+  twoVar_survival:{type:"question",label:"Step 3",
+    q:"Are you adjusting for any confounders (age, sex, comorbidities)?",
+    hint:"Unadjusted = compare two survival curves directly (log-rank). Adjusted = need to control for other variables → use Cox regression (found in the 3+ variable branch).",
+    options:[
+      {text:"No — unadjusted comparison of survival curves between groups",next:"res_logrank"},
+      {text:"Yes — adjusting for one or more confounders",next:"multivar"}
+    ]},
+
+  res_logrank:{type:"result",test:"Kaplan–Meier Curves + Log-rank Test",tag:"Survival",
+    testOptions:TEST_OPTS_BI,testCorrect:12,
+    summary:"Compares survival (time-to-event) curves between 2+ groups without adjusting for covariates. Kaplan–Meier estimates the survival function; the log-rank test formally tests whether survival differs across groups.",
+    steps:["Define the time variable (e.g., days from enrollment to death) and the event indicator (1 = event occurred, 0 = censored).","Estimate K–M survival curves for each group: at each event time t, S(t) = S(t−1) × (1 − events/at-risk).","Plot survival curves with confidence bands; note where curves diverge and the median survival time for each group.","Apply the log-rank test: H₀ = the survival functions are identical across groups. The statistic weights observed vs expected events at each event time.","Report: K–M median survival with 95% CI for each group, log-rank χ² statistic and p-value, and the K–M curves figure.","Caveat: if the proportional hazards assumption is violated (curves cross), the log-rank test loses power — report the crossing and consider weighted log-rank tests."],
+    example:{title:"Example — Time to readmission: Drug A vs Drug B",body:"150 patients randomized to Drug A (n=75) or Drug B (n=75); follow-up to 90 days; some censored. K–M curves plotted. Median readmission-free survival: Drug A = 54 days (95% CI 44–62), Drug B = 71 days (95% CI 63–80). Log-rank χ² = 7.34, df = 1, p = 0.007. Conclusion: reject H₀ — Drug A patients are readmitted significantly sooner."},
+    analogy:"Think of two groups of race cars: K–M plots show what fraction of each group is still 'in the race' (event-free) at each time point. The log-rank test asks whether these two pace lines are significantly different — without worrying about confounders like engine size."},
+
+  // ── BIVARIABLE — Continuous Y ─────────────────────────────────────
+  twoVar_X_contY:{type:"question",label:"Step 3",
+    q:"What type of variable is the EXPOSURE (independent variable, X)?",
+    hint:"X is the predictor or grouping factor.",
+    options:[
+      {text:"Categorical (e.g., treatment vs placebo, MI category)",next:"contY_catX_normal"},
+      {text:"Continuous (e.g., dose in mg, age in years)",next:"contY_contX_normal"}
+    ]},
+  contY_catX_normal:{type:"question",label:"Step 4",
+    q:"Is the outcome Y approximately normally distributed?",
+    hint:"Check with a histogram + Shapiro–Wilk test (preferred for n < 50; more powerful than K–S for detecting departures from normality). H₀: data are normal. If p > 0.05, fail to reject → use parametric test.",
+    options:[
+      {text:"Yes, Y is normally distributed",next:"contY_catX_normal_nCat"},
+      {text:"No, Y is skewed or sample is small",next:"contY_catX_nonnorm_nCat"}
+    ]},
+  contY_catX_normal_nCat:{type:"question",label:"Step 5",
+    q:"How many categories does X have?",
+    options:[
+      {text:"Exactly 2 (e.g., drug vs placebo)",next:"contY_catX_normal_2_paired"},
+      {text:"More than 2 (e.g., No MI / Old MI / Recent MI)",next:"contY_catX_normal_gt2"}
+    ]},
+  contY_catX_normal_2_paired:{type:"question",label:"Step 6",
+    q:"Are the two groups independent or paired (same subjects, two timepoints)?",
+    hint:"Pairing = same patient measured twice (before/after), matched pairs, or twins.",
+    options:[
+      {text:"Independent (different subjects in each group)",next:"res_2sample_t"},
+      {text:"Paired (same subjects, e.g., before/after)",next:"res_paired_t"}
+    ]},
+  contY_catX_nonnorm_nCat:{type:"question",label:"Step 5",
+    q:"How many categories does X have?",
+    options:[
+      {text:"Exactly 2",next:"contY_catX_nonnorm_2_paired"},
+      {text:"More than 2",next:"res_kruskal_wallis"}
+    ]},
+  contY_catX_nonnorm_2_paired:{type:"question",label:"Step 6",
+    q:"Independent or paired groups?",
+    options:[
+      {text:"Independent",next:"res_mann_whitney"},
+      {text:"Paired",next:"res_wilcoxon_sr"}
+    ]},
+  contY_catX_normal_gt2:{type:"result",test:"One-way ANOVA",tag:"Parametric",
+    testOptions:TEST_OPTS_BI,testCorrect:2,
+    summary:"Compares means of a continuous, normally distributed Y across >2 independent groups of X.",
+    steps:["State H₀: all group means are equal. H₁: at least one differs.","Compute the F statistic via ANOVA in your software (Stata, R, SPSS, JMP).","If overall p < 0.05, run post-hoc pairwise comparisons with Bonferroni / Tukey / Scheffé adjustment to find WHICH means differ.","Report each pairwise mean difference and adjusted p-value."],
+    example:{title:"Example — Prior MI and ejection fraction",body:"X = prior MI status (No MI / Old MI / Recent MI). Y = mean ejection fraction (EF). H₀: mean EF is equal across the 3 groups. F = 45.34, p < 0.0001. Conclusion: reject H₀. Post-hoc Bonferroni shows No MI vs Recent MI (64.3 vs 56.1, p < 0.0001) and No MI vs Old MI (64.3 vs 55.2, p < 0.0001) differ; Old vs Recent (56.1 vs 55.2, p = 0.68) do not."},
+    analogy:"Like a taste-test with 3 brands of coffee. ANOVA tells you 'not all taste the same'; the post-hoc test tells you which pair actually differs."},
+
+  contY_contX_normal:{type:"question",label:"Step 4",
+    q:"Are BOTH X and Y approximately normally distributed?",
+    options:[
+      {text:"Yes, both normal",next:"res_pearson_corr"},
+      {text:"No, one or both are non-normal (or one is ordinal)",next:"res_spearman_corr"}
+    ]},
+
+  // ── BIVARIABLE — Categorical Y ────────────────────────────────────
+  twoVar_X_catY:{type:"question",label:"Step 3",
+    q:"What type of variable is the EXPOSURE (X)?",
+    options:[
+      {text:"Categorical (most common case)",next:"catY_catX_nCat"},
+      {text:"Continuous (rare in bivariable analysis)",hint:"Usually you'd flip the analysis and use logistic regression with Y categorical and X continuous",next:"res_logistic_hint"}
+    ]},
+  catY_catX_nCat:{type:"question",label:"Step 4",
+    q:"How many categories do X and Y have?",
+    options:[
+      {text:"Both have exactly 2 categories (a 2×2 table)",next:"catY_2x2_paired_check"},
+      {text:"X and/or Y has more than 2 categories",next:"res_chi_trend"}
+    ]},
+  catY_2x2_paired_check:{type:"question",label:"Step 5",
+    q:"Are the observations independent or paired/matched?",
+    hint:"Paired = same subject measured at two timepoints (e.g., MRSA status before/after treatment). Matched = each case is paired 1:1 with a specific control.",
+    options:[
+      {text:"Independent (different subjects in each group)",next:"catY_catX_sample"},
+      {text:"Paired (same subjects, two timepoints) or matched case-control pairs",next:"res_mcnemar"}
+    ]},
+  catY_catX_sample:{type:"question",label:"Step 6",
+    q:"Is the sample large enough? (All expected cell counts ≥ 5?)",
+    hint:"Compute expected cells: (row total × column total) / grand total for each cell.",
+    options:[
+      {text:"Yes — large sample, all expected cells ≥ 5",next:"res_chi_square"},
+      {text:"No — small sample, one or more expected cells < 5",next:"res_fisher"}
+    ]},
+
+  // Bivariable results — continuous Y
+  res_2sample_t:{type:"result",test:"Two-sample (independent) t-test",tag:"Parametric",
+    testOptions:TEST_OPTS_BI,testCorrect:0,
+    summary:"Compares means of a normally distributed continuous Y between 2 independent groups.",
+    steps:["State H₀: mean(group A) = mean(group B). H₁: means differ.","Verify normality of Y in each group (Shapiro–Wilk preferred for n < 50; visual histogram + Q–Q plot).","Optionally check equal variances (Levene's test); if unequal, use Welch's t-test.","Compute t = (mean₁ − mean₂) / SE(diff) and compare to t-distribution with n₁+n₂−2 df.","Reject H₀ if p < α (commonly 0.05)."],
+    example:{title:"Example — Ejection fraction and cardiovascular disease",body:"Compare mean EF in patients WITH (n = 427, mean EF = 59.87) vs WITHOUT (n = 1959, mean EF = 57.57) cardiovascular disease. t = 2.0117, p = 0.0444 (two-sided). Conclusion: reject H₀ — mean EF differs by CVD status."},
+    analogy:"Like weighing two batches of cookies from different ovens to decide if one oven is biased high. Each cookie is a different one (independent)."},
+
+  res_paired_t:{type:"result",test:"Paired t-test",tag:"Parametric",
+    testOptions:TEST_OPTS_BI,testCorrect:1,
+    summary:"Compares the mean change within the SAME subjects measured at two timepoints (or matched pairs).",
+    steps:["Compute d = post − pre for each subject.","Check that the differences (d) are approximately normal — NOT the raw values themselves.","H₀: mean(d) = 0. H₁: mean(d) ≠ 0.","Compute t = mean(d) / (SD(d)/√n) with n−1 df.","Report mean change with 95% CI and p-value."],
+    example:{title:"Example — Systolic BP before and after exercise",body:"350 subjects measured at baseline (mean SBP = 142.9) and at 3 months after exercise (mean SBP = 134.8). Mean reduction = 8.1 mmHg, t = 17.45, p < 0.0001. Conclusion: reject H₀ — exercise significantly reduced SBP. Important caveat: without a concurrent control group, you cannot rule out regression to the mean, seasonal effects, or natural disease history as alternative explanations for the 8.1 mmHg reduction."},
+    analogy:"Like weighing yourself before and after a holiday — same scale, same person, two timepoints. You're testing the change, not two different people."},
+
+  res_mann_whitney:{type:"result",test:"Wilcoxon Rank-Sum Test (Mann–Whitney U)",tag:"Non-parametric",
+    testOptions:TEST_OPTS_BI,testCorrect:3,
+    summary:"Non-parametric analogue of the 2-sample t-test. Compares medians of a non-normal continuous Y between 2 independent groups.",
+    steps:["Pool all observations and rank them from smallest to largest.","Sum the ranks within each group.","Use the rank sums to compute the test statistic.","H₀: median(group A) = median(group B). H₁: medians differ.","Compare to the Wilcoxon/Mann–Whitney distribution; report p-value."],
+    example:{title:"Example — Skewed pain scores between two drugs",body:"Drug A vs Drug B, outcome = NRS pain score at 24 h (skewed). 30 patients per arm. Compute ranks across all 60 patients; rank sum for Drug A = 760, Drug B = 1070. Software returns U and p-value. Conclusion: reject H₀ if p < 0.05 — Drug A has a lower median pain score."},
+    analogy:"Like ranking marathon runners by finish position instead of exact minutes. You lose timing detail but you don't need normality."},
+
+  res_wilcoxon_sr:{type:"result",test:"Wilcoxon Signed-Rank Test",tag:"Non-parametric",
+    testOptions:TEST_OPTS_BI,testCorrect:4,
+    summary:"Non-parametric analogue of the paired t-test. Compares medians within the SAME subjects at two timepoints when the differences are non-normal.",
+    steps:["Compute d = post − pre for each subject.","Rank |d| (absolute values); attach the sign of d back to each rank.","Sum the positive ranks (W+) and the negative ranks (W−).","H₀: median(d) = 0. H₁: median(d) ≠ 0.","Compare the smaller of W+/W− to critical values in software."],
+    example:{title:"Example — LDL change in a small skewed pilot",body:"12 patients have LDL measured before and after 8 weeks of a new diet. Differences are skewed. Wilcoxon signed-rank gives p = 0.012. Conclusion: median LDL decreased significantly after the diet."},
+    analogy:"Like the paired t-test's cautious cousin — same paired idea, but ranks differences instead of trusting the raw numbers."},
+
+  res_kruskal_wallis:{type:"result",test:"Kruskal–Wallis Test",tag:"Non-parametric",
+    testOptions:TEST_OPTS_BI,testCorrect:5,
+    summary:"Non-parametric analogue of one-way ANOVA. Compares medians of a non-normal continuous Y across >2 independent groups.",
+    steps:["Rank all observations together across groups.","Compute the H statistic from rank sums.","H₀: all group medians are equal. H₁: at least one differs.","If overall p < 0.05, run pairwise Dunn's tests (or Mann–Whitney with Bonferroni correction) for post-hoc."],
+    example:{title:"Example — Pain at 24 h with 3 analgesic protocols",body:"Patients are randomized to Drug A, Drug B, or Drug C. Pain (0–10) is skewed. Kruskal–Wallis H = 11.8, p = 0.003. Post-hoc Dunn's: A vs B p = 0.04, A vs C p = 0.001, B vs C p = 0.42."},
+    analogy:"ANOVA with the gloves off — skips the normality assumption and works on ranks."},
+
+  res_pearson_corr:{type:"result",test:"Pearson's Correlation (r)  and/or  Simple Linear Regression",tag:"Parametric",
+    testOptions:TEST_OPTS_BI,testCorrect:6,
+    summary:"Measures the strength and direction of a linear association between two continuous, normally distributed variables.",
+    steps:["Plot Y vs X (scatterplot) first — visually check for a roughly linear pattern.","Compute Pearson's r. Range: −1 to +1. r = 0 → no linear relationship.","For more detail (slope, prediction), fit simple linear regression: Y = β₀ + β₁X + ε.","Interpret β₁ as 'change in Y per 1-unit change in X'."],
+    example:{title:"Example — Body weight (kg) vs dose required (mg)",body:"Across 200 patients, r = 0.78 (strong positive linear relationship). Linear regression gives Dose = 12 + 0.6 × weight; for every extra kg of body weight, predicted dose rises by 0.6 mg (p < 0.001)."},
+    analogy:"Like asking 'as the thermostat goes up, does the room temperature go up in a straight line?' Pearson's r answers that with one number."},
+
+  res_spearman_corr:{type:"result",test:"Spearman's Rank Correlation (ρ)",tag:"Non-parametric",
+    testOptions:TEST_OPTS_BI,testCorrect:7,
+    summary:"Non-parametric analogue of Pearson's r. Measures monotonic (not necessarily linear) association between 2 variables based on RANKS. Use when one or both variables are non-normal or ordinal (e.g., Likert).",
+    steps:["Rank X and rank Y separately.","Compute Pearson's correlation on the ranks → that is Spearman's ρ.","Interpret as: do higher ranks of X tend to go with higher (or lower) ranks of Y?"],
+    example:{title:"Example — Adherence (Likert) vs HbA1c",body:"Self-reported adherence on a 5-point Likert (ordinal) and HbA1c (continuous, skewed) in 60 diabetes patients. ρ = −0.42, p = 0.001. Higher adherence ranks → lower HbA1c ranks."},
+    analogy:"Spearman's correlation asks 'do they move together in order?' rather than 'do they move together in a straight line?'"},
+
+  // Bivariable results — categorical Y
+  res_chi_square:{type:"result",test:"Pearson's Chi-Square Test (χ²)",tag:"Categorical",
+    testOptions:TEST_OPTS_BI,testCorrect:8,
+    summary:"Tests whether two categorical variables are associated by comparing observed to expected cell counts in independent groups.",
+    steps:["Lay data out in a contingency table (rows = X categories, columns = Y categories).","Compute expected count for each cell = (row total × column total) / grand total.","Compute χ² = Σ (Observed − Expected)² / Expected across all cells.","df = (rows − 1) × (columns − 1). For a 2×2 table, df = 1.","Compare χ² to the chi-square distribution; reject H₀ if p < α.","Also report Risk Ratio (RR) or Odds Ratio (OR) for the 2×2 case to convey effect size."],
+    example:{title:"Example — Sex and in-hospital mortality",body:"Among 2,523 admissions, 54/1882 men and 29/641 women died in-hospital. χ² = 4.12 with 1 df, p = 0.04. Conclusion: reject H₀ — sex is significantly associated with in-hospital mortality. Effect size: compute OR/RR for direction and magnitude."},
+    analogy:"Like comparing two coin-flip tallies and asking 'does this look fair, or is one coin biased?' — only with categorical patient outcomes instead of coins."},
+
+  res_fisher:{type:"result",test:"Fisher's Exact Test",tag:"Categorical",
+    testOptions:TEST_OPTS_BI,testCorrect:9,
+    summary:"Use INSTEAD of chi-square when the sample is small — specifically when any expected cell count is < 5. Calculates an exact (not approximate) p-value.",
+    steps:["Build the 2×2 contingency table the same way as for chi-square.","Check expected counts in every cell. If any < 5, switch from χ² to Fisher's.","Fisher's enumerates all tables as or more extreme than the observed one, given fixed marginals.","Report the exact p-value (and OR with 95% CI for effect size)."],
+    example:{title:"Example — Small pilot of two antibiotics and cure",body:"20 patients: Antibiotic A → 8 cured / 2 not; Antibiotic B → 3 cured / 7 not. Expected counts in some cells are < 5, so use Fisher's Exact Test. p = 0.07."},
+    analogy:"Chi-square is a fast estimate; Fisher's exact is the careful hand-calculation you reach for when the sample is too tiny for shortcuts."},
+
+  res_chi_trend:{type:"result",test:"Pearson's Chi-Square (R × C table) or Chi-Square Test for Trend",tag:"Categorical",
+    testOptions:TEST_OPTS_BI,testCorrect:10,
+    summary:"Generalization of the 2×2 chi-square for tables with more than 2 rows or columns. Use 'test for trend' when the categorical X is ORDINAL (e.g., dose level, stage).",
+    steps:["Build the R × C contingency table.","Compute expected counts as in 2×2: (row total × column total) / grand total.","χ² = Σ (O − E)² / E across all R×C cells.","df = (R − 1) × (C − 1).","If X is ordered (low/medium/high), use chi-square test for trend (Cochran–Armitage) which has more power than the generic χ²."],
+    example:{title:"Example — Dose tier and response",body:"Three dose tiers (low / medium / high) and 2 outcomes (responder / non-responder). For an ordered dose variable, prefer the Cochran–Armitage test for trend over the generic R×C chi-square."},
+    analogy:"Like checking whether your patient population looks the same across age decades — many categories, same logic."},
+
+  res_mcnemar:{type:"result",test:"McNemar's Test",tag:"Categorical",
+    testOptions:TEST_OPTS_BI,testCorrect:13,
+    summary:"Tests whether a binary outcome changes between two paired measurements (before/after, or matched case-control pairs). Only the discordant pairs — those where the outcome changed — drive the test statistic. The concordant pairs contribute nothing.",
+    steps:["Arrange data in a 2×2 table: rows = Time 1 status, columns = Time 2 status. The four cells are: both positive (a), positive→negative (b), negative→positive (c), both negative (d).","Concordant pairs (a and d) do NOT contribute — they provide no information about change.","Discordant pairs: b = changed from + to −; c = changed from − to +.","H₀: the proportion of discordant pairs is symmetric (b = c). H₁: b ≠ c.","Compute McNemar's χ² = (|b − c| − 1)² / (b + c), df = 1. (The −1 is a continuity correction; omit when b + c is large.)","Report: counts in each cell, McNemar's χ² and p-value, and the proportion positive before vs after with 95% CIs."],
+    example:{title:"Example — MRSA nasal carriage before and after decolonization",body:"100 patients swabbed at admission and discharge. b = 15 (positive→negative); c = 4 (negative→positive); concordant: a = 10 (positive at both), d = 71 (negative at both). McNemar's χ² = (|15−4|−1)²/(15+4) = (10)²/19 = 5.26, p = 0.022. Conclusion: reject H₀ — decolonization significantly reduced MRSA carriage."},
+    analogy:"Imagine a coin that's sometimes heads (positive) and sometimes tails (negative). McNemar's only cares about the coins that FLIPPED between measurements — the ones that stayed the same are irrelevant, like unchanged voters in an election swing analysis."},
+
+  res_logistic_hint:{type:"result",test:"Logistic Regression (Y categorical, X continuous)",tag:"Regression",
+    testOptions:TEST_OPTS_BI,testCorrect:11,
+    summary:"When Y is categorical (often binary) and X is continuous, a chi-square isn't the right tool — use logistic regression.",
+    steps:["Fit logit(P(Y=1)) = β₀ + β₁X.","Interpret exp(β₁) as the Odds Ratio for a 1-unit increase in X.","Even though this is technically a 'regression', it's a perfectly valid bivariable analysis when X is continuous and Y is binary."],
+    example:{title:"Example — Age and 30-day readmission",body:"Y = readmitted within 30 days (yes/no). X = age in years. Logistic regression gives β = 0.04, OR = exp(0.04) = 1.04 per year (95% CI 1.02–1.06), p < 0.001."},
+    analogy:"Logistic regression bends a straight line into an S-curve so it can predict probabilities between 0 and 1 — the right tool when Y is yes/no."}
+};
+
+// ── State ──────────────────────────────────────────────────────────
+let path=[], current="start";
+let testSelected=false, testChosenIdx=null;
+
+function render(){
+  const node=NODES[current];
+  const container=document.getElementById("step-container");
+  const breadcrumbs=document.getElementById("breadcrumbs");
+  const examples=document.getElementById("examples-container");
+  const progress=document.getElementById("progress");
+
+  // Breadcrumbs
+  if(path.length===0){breadcrumbs.style.display="none";}
+  else{
+    breadcrumbs.style.display="block";
+    breadcrumbs.innerHTML="<span class='crumb'>Your path:</span> "+path.map(p=>p.label).join("  →  ");
+  }
+
+  // Dynamic progress bar — grows with the path
+  let dots="";
+  if(node.type==="question"){
+    const dotCount=path.length+2; // completed + current + result step ahead
+    for(let i=0;i<dotCount;i++){
+      if(i<path.length) dots+=`<div class='pdot done'></div>`;
+      else if(i===path.length) dots+=`<div class='pdot active'></div>`;
+      else dots+=`<div class='pdot final'></div>`;
+    }
+  } else {
+    const dotCount=path.length+1;
+    for(let i=0;i<dotCount;i++){
+      if(i<path.length) dots+=`<div class='pdot done'></div>`;
+      else if(!testSelected) dots+=`<div class='pdot final active'></div>`;
+      else dots+=`<div class='pdot final done'></div>`;
+    }
+  }
+  progress.innerHTML=dots;
+  examples.innerHTML="";
+
+  if(node.type==="question"){
+    let html=`<div class="step-label">${node.label||('Step '+(path.length+1))}</div>`;
+    html+=`<h2>${node.q}</h2>`;
+    if(node.hint)html+=`<p style="color:var(--muted);font-size:.9em;margin:0 0 14px">💡 ${node.hint}</p>`;
+    html+=`<div class="options">`;
+    node.options.forEach((opt,idx)=>{
+      html+=`<button class="opt-btn" data-idx="${idx}"><strong>${opt.text}</strong>${opt.hint?`<span class="hint">${opt.hint}</span>`:""}</button>`;
+    });
+    html+=`</div><div class="btn-row">`;
+    if(path.length>0)html+=`<button class="btn btn-secondary" id="back-btn">← Back</button>`;
+    html+=`<button class="btn btn-secondary" id="restart-btn">↺ Start over</button></div>`;
+    container.innerHTML=html;
+
+    container.querySelectorAll(".opt-btn").forEach(btn=>{
+      btn.addEventListener("click",e=>{
+        const idx=parseInt(btn.dataset.idx);
+        const opt=node.options[idx];
+        path.push({id:current,label:opt.text,nodeQ:node.q});
+        current=opt.next;
+        testSelected=false; testChosenIdx=null;
+        render();
+      });
+    });
+    if(document.getElementById("back-btn")){
+      document.getElementById("back-btn").addEventListener("click",()=>{
+        const last=path.pop();if(last)current=last.id;
+        testSelected=false; testChosenIdx=null;
+        render();
+      });
+    }
+    document.getElementById("restart-btn").addEventListener("click",()=>{
+      path=[];current="start";testSelected=false;testChosenIdx=null;render();
+    });
+
+  } else if(node.type==="result"){
+
+    if(!testSelected){
+      // Phase A: Test selection quiz
+      let html=`<div class="step-label step-final">Final Step — Select the Test</div>`;
+      html+=`<h2>Based on your path through the decision tree, which statistical test should you apply?</h2>`;
+      html+=`<p style="color:var(--muted);font-size:.9em;margin:0 0 14px">💡 Choose the best answer before seeing the full explanation.</p>`;
+      html+=`<div class="test-select-box"><div class="ts-label">Choose one:</div><div class="options">`;
+      node.testOptions.forEach((opt,i)=>{
+        html+=`<button class="opt-btn" data-test-idx="${i}">${opt}</button>`;
+      });
+      html+=`</div></div>`;
+      html+=`<div class="btn-row">`;
+      if(path.length>0)html+=`<button class="btn btn-secondary" id="back-btn">← Back</button>`;
+      html+=`<button class="btn btn-secondary" id="restart-btn">↺ Start over</button></div>`;
+      container.innerHTML=html;
+
+      container.querySelectorAll(".opt-btn[data-test-idx]").forEach(btn=>{
+        btn.addEventListener("click",()=>{
+          testChosenIdx=parseInt(btn.dataset.testIdx);
+          testSelected=true;
+          render();
+        });
+      });
+      if(document.getElementById("back-btn")){
+        document.getElementById("back-btn").addEventListener("click",()=>{
+          const last=path.pop();if(last)current=last.id;
+          testSelected=false;testChosenIdx=null;
+          render();
+        });
+      }
+      document.getElementById("restart-btn").addEventListener("click",()=>{
+        path=[];current="start";testSelected=false;testChosenIdx=null;render();
+      });
+
+    } else {
+      // Phase B: Reveal result with feedback
+      const isCorrect=testChosenIdx===node.testCorrect;
+      let html="";
+
+      if(isCorrect){
+        html+=`<div class="feedback-correct">
+          <div><span class="feedback-icon">✓</span><span class="feedback-title">Correct!</span></div>
+          <div><strong>${node.testOptions[node.testCorrect]}</strong> is the right test for this scenario.</div>
+        </div>`;
+      } else {
+        html+=`<div class="feedback-incorrect">
+          <div><span class="feedback-icon">✗</span><span class="feedback-title">Not quite</span></div>
+          <div>You chose <strong>${node.testOptions[testChosenIdx]}</strong> — the correct answer is <strong>${node.testOptions[node.testCorrect]}</strong>.</div>
+        </div>`;
+      }
+
+      html+=`<div class="result"><h2>✓ ${node.test}</h2><div class="sub">${node.summary}</div></div>`;
+      html+=`<div class="card" style="margin-top:0">`;
+      if(node.tag){
+        let cls="tag-parametric";
+        if(node.tag.toLowerCase().includes("non"))cls="tag-nonparametric";
+        else if(node.tag.toLowerCase()==="survival")cls="tag-survival";
+        else if(["categorical","regression","adjusted"].some(w=>node.tag.toLowerCase().includes(w)))cls="tag-categorical";
+        html+=`<span class="tag ${cls}">${node.tag}</span>`;
+      }
+      html+=`<h3>Step-by-step</h3><ol class="steps-list">`;
+      node.steps.forEach(s=>html+=`<li>${s}</li>`);
+      html+=`</ol>`;
+      if(node.example)html+=`<div class="example-box"><div class="ex-title">📋 ${node.example.title}</div><div>${node.example.body}</div></div>`;
+      if(node.analogy)html+=`<div class="analogy"><div class="a-title">🔎 Analogy</div><div>${node.analogy}</div></div>`;
+      html+=`<div class="btn-row">
+        <button class="btn btn-secondary" id="try-again-btn">← Try test selection again</button>
+        <button class="btn btn-primary" id="restart-btn">↺ Start a new test</button>
+      </div></div>`;
+      container.innerHTML=html;
+
+      document.getElementById("try-again-btn").addEventListener("click",()=>{
+        testSelected=false;testChosenIdx=null;render();
+      });
+      document.getElementById("restart-btn").addEventListener("click",()=>{
+        path=[];current="start";testSelected=false;testChosenIdx=null;render();
+      });
+      examples.innerHTML=referenceTableHTML();
+    }
+  }
+}
+
+function referenceTableHTML(){
+  return `
+  <div class="card" style="margin-top:20px">
+    <h3>Quick-reference: parametric vs non-parametric pairs</h3>
+    <div class="table-scroll"><table class="assumptions">
+      <tr><th style="width:13%">Analysis type</th><th>Situation</th><th>Parametric (normal Y)</th><th>Non-parametric (skewed Y)</th></tr>
+      <tr><td rowspan="6" style="font-weight:700;color:var(--primary);background:#EEF4FF;vertical-align:middle;text-align:center;font-size:.95em">Univariable</td><td>1 continuous variable — describe</td><td>Mean ± SD, 95% CI</td><td>Median + IQR, range</td></tr>
+      <tr><td>1 continuous variable — test vs reference value</td><td>One-sample t-test</td><td>One-sample Wilcoxon signed-rank (or sign test)</td></tr>
+      <tr><td>1 binary variable — describe</td><td colspan="2">Proportion (n/N, %) with 95% CI</td></tr>
+      <tr><td>1 binary variable — test vs known proportion</td><td colspan="2">One-sample binomial / one-proportion z-test</td></tr>
+      <tr><td>1 multi-category variable — describe</td><td colspan="2">Frequency table (n, %) per category</td></tr>
+      <tr><td>1 multi-category variable — test vs expected distribution</td><td colspan="2">Chi-square goodness-of-fit</td></tr>
+      <tr><td rowspan="9" style="font-weight:700;color:var(--primary);background:#FFF8EE;vertical-align:middle;text-align:center;font-size:.95em">Bivariable</td><td>2 independent groups, continuous Y</td><td>2-sample t-test</td><td>Wilcoxon Rank-Sum (Mann–Whitney)</td></tr>
+      <tr><td>Paired data, continuous Y (one group, 2 timepoints)</td><td>Paired t-test</td><td>Wilcoxon Signed-Rank</td></tr>
+      <tr><td>≥3 independent groups, continuous Y</td><td>One-way ANOVA</td><td>Kruskal–Wallis</td></tr>
+      <tr><td>2 continuous variables</td><td>Pearson's correlation</td><td>Spearman's correlation</td></tr>
+      <tr><td>2 categorical variables, 2×2, independent, large sample</td><td colspan="2">Pearson's Chi-square</td></tr>
+      <tr><td>2 categorical variables, 2×2, independent, small sample (expected &lt;5)</td><td colspan="2">Fisher's Exact Test</td></tr>
+      <tr><td>2 categorical variables, 2×2, <strong>paired</strong> (same subject, two timepoints)</td><td colspan="2"><strong>McNemar's Test</strong></td></tr>
+      <tr><td>R × C categorical, independent</td><td colspan="2">Pearson's Chi-square (or Chi-square for Trend if X ordinal)</td></tr>
+      <tr><td>Time-to-event Y, 2+ groups, <strong>unadjusted</strong></td><td colspan="2"><strong>Log-rank Test + Kaplan–Meier Curves</strong></td></tr>
+      <tr><td rowspan="4" style="font-weight:700;color:var(--primary);background:#EEF7EE;vertical-align:middle;text-align:center;font-size:.95em">Multivariable<br><span style="font-weight:400;font-size:.82em;color:var(--muted)">(≥1 Y + ≥2 X's;<br>adjusts for confounders)</span></td>
+        <td><strong>Continuous Y</strong></td><td colspan="2"><strong>Multiple linear regression.</strong> β = mean change in Y per 1-unit increase in X, holding other variables constant.</td></tr>
+      <tr><td><strong>Binary Y</strong></td><td colspan="2"><strong>Logistic regression.</strong> exp(β) = Odds Ratio (OR). Note: OR approximates RR only when outcome is rare (roughly &lt;10%); with common outcomes, OR overestimates RR.</td></tr>
+      <tr><td><strong>Count or rate Y</strong></td><td colspan="2"><strong>Poisson regression</strong> (or negative binomial if overdispersed). exp(β) = Rate Ratio (RR).</td></tr>
+      <tr><td><strong>Time-to-event Y</strong> (with censoring)</td><td colspan="2"><strong>Cox proportional hazards regression.</strong> exp(β) = Hazard Ratio (HR). Check proportional hazards assumption.</td></tr>
+    </table></div>
+    <div class="note-box">
+      <strong>Normality testing note:</strong> Shapiro–Wilk is preferred over Kolmogorov–Smirnov, especially for n &lt; 50, because it has substantially more power to detect departures from normality. Always pair statistical tests with visual inspection (histogram + Q–Q plot).
+    </div>
+    <p class="ref-list">
+      <strong>References:</strong><br>
+      Garrett JG. Statistical test selection flowchart. UNC Biostatistics, 2012 (PHR 952 slides 35, 84, 122).<br>
+      Cooksey RW. <em>Illustrating statistical procedures.</em> 2020; 61–139.<br>
+      Gaddis GM, Gaddis ML. Introduction to biostatistics. <em>Ann Emerg Med.</em> 1990;19(5):591–597.<br>
+      Sullivan GM, Feinn R. Using effect size. <em>J Grad Med Educ.</em> 2012;4(3):279–282.<br>
+      Kaplan EL, Meier P. Nonparametric estimation from incomplete observations. <em>J Am Stat Assoc.</em> 1958;53(282):457–481.
+    </p>
+  </div>`;
+}
+
+render();
+</script>
+</body>
+</html>
