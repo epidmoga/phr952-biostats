@@ -38,10 +38,10 @@ commercially, provided you credit the author.
 
 ## Citation
 
-> Moga D. *Statistical Test Selector* / *Practice Scenarios*.
+> Moga DC. *Statistical Test Selector* / *Practice Scenarios*.
 > PHR 952 Biostatistics. University of Kentucky College of Pharmacy; 2026.
 > Available at: https://epidmoga.github.io/phr952-biostats/
 
 ## Contact
 
-Daniela Moga — daniela.moga@uky.edu
+Dr. Daniela Moga — daniela.moga@uky.edu
