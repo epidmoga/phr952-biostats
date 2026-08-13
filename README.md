@@ -44,4 +44,4 @@ commercially, provided you credit the author.
 
 ## Contact
 
-Dr. Daniela Moga — daniela.moga@uky.edu
+Dr. Daniela C. Moga — daniela.moga@uky.edu
